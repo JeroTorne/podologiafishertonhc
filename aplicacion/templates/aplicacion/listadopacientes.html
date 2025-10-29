@@ -1,0 +1,107 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+{% block Body %}
+<header class="mastheadconsultas">
+
+    <table id="FormularioConsulta" style="text-align: justify;" class="table">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Fecha Creación</th>
+                <th>Última Actualización</th>
+                <th style="text-align: center;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for paciente in paciente %}
+            <tr>
+                <td data-label="ID">{{ paciente.id_usuario }}</td>
+                <td data-label="Nombre">{{ paciente.nombre }}</td>
+                <td data-label="Apellido">{{ paciente.apellido }}</td>
+                <td data-label="Fecha Creación">
+                    {% with historias=paciente.historiaclinica_set.all %}
+                    {% if historias %}
+                        {% for historia in historias %}
+                        <div class="historia-item mb-2">
+                            {{ historia.fecha_consulta|date:"d/m/Y" }}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <span>Sin consultas</span>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                <td data-label="Actualización">
+                    {% with historias=paciente.historiaclinica_set.all %}
+                    {% if historias %}
+                        {% for historia in historias %}
+                        <div class="historia-item mb-2">
+                            {{ historia.fecha_actualizacion|date:"d/m/Y" }}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <span>Sin consultas</span>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                <td data-label="Acciones">
+                    {% with historias=paciente.historiaclinica_set.all %}
+                    {% if historias %}
+                        {% for historia in historias %}
+                        <div class="historia-item2 mb-2" style=" justify-content: flex-start; align-items: center; gap: 10px;">
+                            <!-- Botón para ver la historia -->
+                            <a href="{% url 'update_historia' historia.id %}" class="btn-sm btn btn-primary">
+                                ✎ Ver Historia #{{ forloop.counter }}
+                            </a>
+                            <!-- Botón para eliminar la historia -->
+                            <a href="{% url 'delete_historia' historia.id %}" class="btn-sm btn-sm-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar esta historia clínica?');">
+                                ✖ Eliminar Historia
+                            </a>
+                            
+                        </div>
+                 
+                        {% endfor %}
+                        
+                </td>                     
+            {% else %}
+
+
+                        <a style="display: flex;justify-content: center;" href="{% url 'delete_paciente' paciente.id_usuario %}" class="btn-sm-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este paciente?');">✖ Eliminar Paciente</a>
+
+                <td>
+                             
+                            
+                    {% endif %}
+                    {% endwith %}
+                    
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No se encontraron pacientes.</td>
+
+            </tr>
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            {% for paciente in paciente %}
+    <tr>
+        <td colspan="6">
+            <div style="display: flex;justify-content: flex-end;" class="tfoot-btns">
+                <a href="{% url 'crear_historia_clinica' paciente.id_usuario %}" class="btn btn-primary btn-sm">✚ Nueva Historia</a>
+                <a href="javascript:history.back()" class="btn btn-secondary btn-sm">Volver</a>            </div>
+        </td>
+    </tr>
+
+            {% endfor %}
+</tfoot>
+    </table>
+</header>
+
+{% endblock Body %}
+

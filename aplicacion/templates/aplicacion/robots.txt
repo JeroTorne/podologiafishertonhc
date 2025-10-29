@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login/
+Disallow: /logout/
+Disallow: /buscar_paciente/
+Disallow: /crear_paciente/
+Disallow: /crear_hc/
+Disallow: /update_historia/
+Disallow: /delete_historia/
+Disallow: /detail_historia/
+Disallow: /delete_paciente/
+Disallow: /detail_paciente/
+
+# Permitir páginas públicas
+Allow: /staff/
+Allow: /turnos/
+
+
+Sitemap: https://podologiafisherton.com.ar/sitemap.xml

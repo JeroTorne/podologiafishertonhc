@@ -1,0 +1,203 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+{% block Body %}
+<header class="mastheadconsultas">
+    <div class="container">
+        <form method="POST" enctype="multipart/form-data" id="FormularioConsulta">
+            {% csrf_token %}
+                        
+            <div class="side-container">
+                <div class="pie-type" style="border-top: 0 !important;">
+                    <label for="{{ form.perfil_paciente.id_for_label }}">{{ form.perfil_paciente.label }}</label>
+                    {{ form.perfil_paciente }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type" style="border-top: 0 !important;">
+                    <label for="{{ form.alergias.id_for_label }}">{{ form.alergias.label }}</label>
+                    {{ form.alergias }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.enfermedades.id_for_label }}">{{ form.enfermedades.label }}</label>
+                    {{ form.enfermedades }}
+                </div>
+            </div>                        
+
+            <div class="side-container" >
+                <div class="pie-type">
+                    <label for="{{ form.tipo_pie_derecho.id_for_label }}">{{ form.tipo_pie_derecho.label }}</label>
+                    {{ form.tipo_pie_derecho }}
+                </div>
+            </div>
+
+            <div class="side-container" >
+                <div class="pie-type" style="border-top: 0 !important;">
+                    <label for="{{ form.patologias_pie_derecho.id_for_label }}">{{ form.patologias_pie_derecho.label }}</label>
+                    {{ form.patologias_pie_derecho }}
+                </div>
+            </div>
+
+            <div class="side-container" >
+                <div class="pie-type">
+                    <label for="{{ form.tipo_pie_izquierdo.id_for_label }}">{{ form.tipo_pie_izquierdo.label }}</label>
+                    {{ form.tipo_pie_izquierdo }}
+                </div>
+            </div>
+
+            <div class="side-container" >
+                <div class="pie-type" style="border-top: 0 !important;">
+                    <label for="{{ form.patologias_pie_izquierdo.id_for_label }}">{{ form.patologias_pie_izquierdo.label }}</label>
+                    {{ form.patologias_pie_izquierdo }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.diabetes.id_for_label }}">{{ form.diabetes.label }}</label>
+                    {{ form.diabetes }}
+                </div>
+                <div class="pie-type">
+                    <label for="{{ form.medicamentos_diabetes.id_for_label }}">{{ form.medicamentos_diabetes.label }}</label>
+                    {{ form.medicamentos_diabetes }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.colesterol.id_for_label }}">{{ form.colesterol.label }}</label>
+                    {{ form.colesterol }}
+                </div>
+                <div class="pie-type">
+                    <label for="{{ form.medicamentos_colesterol.id_for_label }}">{{ form.medicamentos_colesterol.label }}</label>
+                    {{ form.medicamentos_colesterol }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.anticoagulante.id_for_label }}">{{ form.anticoagulante.label }}</label>
+                    {{ form.anticoagulante }}
+                </div>
+                <div class="pie-type">
+                    <label for="{{ form.anticoagulante_medicamentos.id_for_label }}">{{ form.anticoagulante_medicamentos.label }}</label>
+                    {{ form.anticoagulante_medicamentos }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.hipertension.id_for_label }}">{{ form.hipertension.label }}</label>
+                    {{ form.hipertension }}
+                </div>
+                <div class="pie-type">
+                    <label for="{{ form.hipertension_medicamentos.id_for_label }}">{{ form.hipertension_medicamentos.label }}</label>
+                    {{ form.hipertension_medicamentos }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.enfermedades_respiratorias.id_for_label }}">{{ form.enfermedades_respiratorias.label }}</label>
+                    {{ form.enfermedades_respiratorias }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.enfermedades_reumatologicas.id_for_label }}">{{ form.enfermedades_reumatologicas.label }}</label>
+                    {{ form.enfermedades_reumatologicas }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.enfermedades_vasculares.id_for_label }}">{{ form.enfermedades_vasculares.label }}</label>
+                    {{ form.enfermedades_vasculares }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type">
+                    <label for="{{ form.enfermedades_neuropatias.id_for_label }}">{{ form.enfermedades_neuropatias.label }}</label>
+                    {{ form.enfermedades_neuropatias }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type" style="width: 100% !important;">
+                    <label for="{{ form.antecedentes_familiares.id_for_label }}">{{ form.antecedentes_familiares.label }}</label>
+                    {{ form.antecedentes_familiares }}
+                </div>
+            </div> 
+
+            <div class="side-container">
+                <div class="pie-type" style="width: 100% !important;">
+                    <label for="{{ form.observaciones.id_for_label }}">{{ form.observaciones.label }}</label>
+                    {{ form.observaciones }}
+                </div>
+            </div>
+
+            <div class="side-container">
+                <div class="pie-type" style="width: 100% !important;">
+                    <label for="{{ form.archivos.id_for_label }}">{{ form.archivos.label }}</label>
+                    {{ form.archivos }}
+                </div>
+            </div>
+
+            <!-- Sección de Seguimientos -->
+            <div class="side-container">
+                <div class="pie-type" style="width: 100% !important;">
+                    <div class="seguimientos-container">
+                        <h4>Seguimientos</h4>
+                        <div id="seguimientos-list">
+                            {% if form.instance.id %}
+                                {% for seguimiento in form.instance.seguimientos.all %}
+                                <div class="seguimiento-entry" style="display: block;columns: 3; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; position: relative;">
+                                    <div class="fecha" style="font-weight: bold; color: #666;">{{ seguimiento.fecha|date:"d/m/Y" }}</div>
+                                    <div class="descripcion" style="margin-top: 5px;">{{ seguimiento.descripcion }}</div>
+                                    <button type="button" style="width: fit-content; background-color:#dc3545;" class="btn-sm btn-sm-danger" data-seguimiento-id="{{ seguimiento.id }}" title="Eliminar seguimiento">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>                                
+                                </div>
+                                {% endfor %}
+                                
+                                <!-- Formulario para nuevo seguimiento -->
+                                <div id="form-seguimiento" style="display: none; margin-top: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 5px; background-color: #f8f9fa;">
+                                    <div class="form-group">
+                                        <label for="id_fecha_seguimiento">Fecha del seguimiento:</label>
+                                        <input type="date" class="form-control" id="id_fecha_seguimiento" name="fecha_seguimiento">
+                                    </div>
+                                    <div class="form-group mt-3">
+                                        <label for="id_descripcion_seguimiento">Descripción del seguimiento:</label>
+                                        <textarea class="form-control" id="id_descripcion_seguimiento" name="descripcion_seguimiento" rows="3" placeholder="Descripción del seguimiento"></textarea>
+                                    </div>
+                                    <div style="margin-top: 15px;">
+                                        <button type="submit" class="btn btn-primary" id="guardar-seguimiento">Guardar Seguimiento</button>
+                                        <button type="button" style="margin-top: 1rem;" class="btn btn-secondary" id="cancelar-seguimiento">Cancelar</button>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-primary mt-3" id="agregar-seguimiento">
+                                    <i class="fas fa-plus"></i> Agregar Seguimiento
+                                </button>
+                            {% else %}
+                                <p class="text-muted">Los seguimientos estarán disponibles después de guardar la historia clínica.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button style="margin-top: 1rem;" type="submit">Guardar</button>
+            <button style="margin-top: 1rem;" type="button" onclick="history.back()" class="btn btn-secondary btn-sm">Volver</button>
+        </form>
+    </div>
+</header>
+
+
+{% endblock Body %}

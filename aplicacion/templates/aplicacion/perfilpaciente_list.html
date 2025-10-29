@@ -1,0 +1,36 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+
+{% block Body %}
+<header class="mastheadconsultas">
+    <div class="container px-4 px-lg-5 h-100">
+        <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+            <table id="FormularioConsulta" style="text-align: justify;width: 100vh;border-color: #fff;" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                
+                    {% for p in paciente_list %}
+                    <tr>
+                        <td>{{ p.id }}</td>
+                        <td>{{ p.nombre }}</td>
+                        <td>{{ p.apellido }}</td>
+                    </tr>
+                    {% endfor %}
+                    <td><a href="{% url 'inicio' %}"class="btn btn-primary" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Inicio</a></td>
+
+                    </table>
+                </tbody>
+            </table>       
+        </div>
+    </div>
+</header>
+{% endblock Body %}
+
+

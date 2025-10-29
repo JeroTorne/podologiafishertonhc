@@ -1,0 +1,25 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+{% block Body %}
+    <header class="mastheadconsultas">
+                <br>
+                {% if mensaje %}
+                <h4>
+                    <p class="datos-invalidos">
+                    {{ mensaje }}
+                    </p>
+                </h4>
+                {% endif %}
+
+                <form action="{% url 'buscar_paciente2' %}" id="FormularioConsulta" style="width: auto;" class="container" action="" method="get">
+                    {% csrf_token %}
+                    
+                    <label for="nombre">Buscar Paciente</label>
+                    <input type="text" name="nombre" id="nombre">
+                    <button class="pacientebtn" style="width:100%;" type="submit">Buscar Usuario</button>
+
+                </form>
+    </header>
+
+{% endblock Body %}

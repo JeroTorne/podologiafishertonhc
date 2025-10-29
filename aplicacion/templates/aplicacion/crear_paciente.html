@@ -1,0 +1,95 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+{% block Body %}
+    <header class="mastheadconsultas">
+
+    <form id="FormularioConsulta" class="container" action="" method="POST">
+
+        {% csrf_token %}
+
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
+                {{ form.nombre }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.apellido.id_for_label }}">{{ form.apellido.label }}</label>
+                {{ form.apellido }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.dni.id_for_label }}">{{ form.dni.label }}</label>
+                {{ form.dni }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.fecha_nacimiento.id_for_label }}">{{ form.fecha_nacimiento.label }}</label>
+                {{ form.fecha_nacimiento }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.telefono.id_for_label }}">{{ form.telefono.label }}</label>
+                {{ form.telefono }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.domicilio.id_for_label }}">{{ form.domicilio.label }}</label>
+                {{ form.domicilio }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.localidad.id_for_label }}">{{ form.localidad.label }}</label>
+                {{ form.localidad }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.numero_calzado.id_for_label }}">{{ form.numero_calzado.label }}</label>
+                {{ form.numero_calzado }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.altura.id_for_label }}">{{ form.altura.label }}</label>
+                {{ form.altura }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.peso.id_for_label }}">{{ form.peso.label }}</label>
+                {{ form.peso }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.motivo_consulta.id_for_label }}">{{ form.motivo_consulta.label }}</label>
+                {{ form.motivo_consulta }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.actividad_fisica.id_for_label }}">{{ form.actividad_fisica.label }}</label>
+                {{ form.actividad_fisica }}
+            </div>
+        </div>
+        <div class="side-container">
+            <div class="pie-type" style="border-top: 0 !important;">
+                <label for="{{ form.plantillas.id_for_label }}">{{ form.plantillas.label }}</label>
+                {{ form.plantillas }}
+            </div>
+        </div>
+        <button style="margin-top: 1rem;" type="submit">Guardar</button>
+        
+    </form>
+
+
+</header>        
+{% endblock Body %}

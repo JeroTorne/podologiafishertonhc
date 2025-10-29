@@ -1,0 +1,893 @@
+body {
+  margin: 0;
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  font-weight: var(--bs-body-font-weight);
+  line-height: var(--bs-body-line-height);
+  color: var(--bs-body-color);
+  text-align: var(--bs-body-text-align);
+  background-color: var(--bs-body-bg);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  width: 100%;
+  height:100dvh;
+}
+
+html {
+  height:100dvh;
+  scroll-padding-top: calc(4.5rem - 1px);
+  font-family: "Merriweather Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+nav {
+  background-color: #fff; /* Color de fondo del nav */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para separar del body */
+  padding: 10px 0; /* Espaciado interno */
+  font-size: 2vh;
+  width: 100%;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 70vw; /* Ancho máximo del contenedor */
+  margin: 0 auto; /* Centrar el contenedor */
+  padding: 0 5px; /* Espaciado interno */
+}
+
+.nav-container a:hover {
+  color: #878e94;
+}
+
+.logonav {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #04263f; /* Color del texto */
+  font-weight: bold;
+  font-size: 2.5vh;
+}
+  
+.lista-nav-div{
+  display: grid;
+  text-align: center;
+  justify-content: center;
+  
+}
+.logonav img {
+  margin-right: 10px; /* Espaciado entre el logo y el texto */
+}
+
+.lista-nav {
+  list-style: none; /* Quita los puntos de la lista */
+  display: flex; /* Coloca los elementos en fila */
+  gap: 20px; /* Espaciado entre los elementos */
+  padding: 0; /* Evita espacios extra */
+  margin: 0;
+}
+
+.lista-nav li {
+  display: inline; /* Asegura que los <li> sean en línea */
+}
+
+.lista-nav a {
+  color: #04263f;
+  text-decoration: none; /* Quita el subrayado */
+  font-weight: bold; /* Opcional: mejora la visibilidad */
+  padding: 10px; /* Espaciado para mejor clickeabilidad */
+  transition: color 0.3s ease-in-out;
+}
+
+.lista-nav a:hover {
+  color: #878e94; /* Color cuando se pasa el mouse */
+}
+
+.btn-logout{
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 2vh;
+  display: flex;
+  margin: 0 auto;
+  padding-top: 2px;
+  color: #04263f;
+  text-decoration: none; /* Quita el subrayado */
+  font-weight: bold; /* Opcional: mejora la visibilidad */
+  transition: color 0.3s ease-in-out;
+}
+
+.btn-logout:hover {
+  color: #878e94; /* Color cuando se pasa el mouse */
+}
+
+#mainNav {
+    position: sticky; /* Hace que el navbar sea sticky */
+    top: 0; /* Lo fija en la parte superior */
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    background-color: white; /* Fondo del navbar */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para separarlo del contenido */
+}
+
+#hov-redes a:hover{
+  color: #878e94; /* Color cuando se pasa el mouse */
+}
+
+
+
+#mainNav .navbar-brand {
+  font-weight: 700;
+  color: #04263f;
+}
+#mainNav .navbar-nav .nav-item .nav-link {
+  color: #6c757d;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.75rem 0;
+}
+#mainNav .navbar-nav .nav-item .nav-link:hover, #mainNav .navbar-nav .nav-item .nav-link:active {
+  color: rgba(4, 38, 100, 3);
+}
+#mainNav .navbar-nav .nav-item .nav-link.active {
+  color: rgba(4, 38, 100, 3) !important;
+}
+@media (min-width: 450px) {
+  #mainNav {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    background-color: #f8f9fa;
+  }
+  #mainNav .navbar-brand {
+    color: #04263f;
+  }
+  #mainNav .navbar-brand:hover {
+    color: #fff;
+    color: #04263f;
+  }
+  #mainNav .navbar-nav .nav-item .nav-link {
+    color: #04263f;
+    padding: 0 1rem;
+  }
+  #mainNav .navbar-nav .nav-item .nav-link:hover {
+    color: #fff;
+  }
+  #mainNav .navbar-nav .nav-item:last-child .nav-link {
+    padding-right: 0;
+  }
+  #mainNav.navbar-shrink {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    background-color: #f8f9fa;
+    opacity: 0.75;
+
+  }
+  #mainNav.navbar-shrink .navbar-brand {
+    color: rgba(4, 38, 100, 0.7);
+  }
+  #mainNav.navbar-shrink .navbar-brand:hover {
+    color: rgba(4, 38, 100, 1);
+  }
+  #mainNav.navbar-shrink .navbar-nav .nav-item .nav-link {
+    color: rgba(4, 38, 63, 0.7);
+  }
+  #mainNav.navbar-shrink .navbar-nav .nav-item .nav-link:hover {
+    color: rgba(4, 38, 100, 1);
+  }
+}
+
+/* Estilos para el botón hamburguesa */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+header.masthead {
+  padding-top: 2rem;
+  padding-bottom: calc(10rem - 4.5rem);
+  background:linear-gradient(to bottom, rgba(4, 38, 63, 0.1) 0%, rgba(4, 38, 63, 0.15) 100%), url("../assets/img/webp/bk-image.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-size:cover;
+}
+
+header.mastheadconsultas {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background:linear-gradient(to bottom, rgba(4, 38, 63, 0.1) 0%, rgba(4, 38, 63, 0.15) 100%), url("../assets/img/webp/consultas.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-size: cover;
+}
+
+header.mastheadconsultas h1, header.mastheadconsultas .h1 {
+  font-size: 2.25rem;
+}
+
+@media (min-width: 992px) {
+  header.mastheadconsultas {
+    min-height: 85dvh;
+  }
+  header.mastheadconsultas p {
+    font-size: 1.15rem;
+  }
+  header.mastheadconsultas h1, header.mastheadconsultas .h1 {
+    font-size: 3rem;
+  }
+}
+@media (min-width: 1200px) {
+  header.mastheadconsultas h1, header.mastheadconsultas .h1 {
+    font-size: 3.5rem;
+  }
+}
+
+
+header.masthead h1, header.masthead .h1 {
+  font-size: 2.25rem;
+}
+@media (min-width: 992px) {
+  header.masthead {
+    min-height: 40rem;
+  }
+  header.masthead p {
+    font-size: 1.15rem;
+  }
+  header.masthead h1, header.masthead .h1 {
+    font-size: 3rem;
+  }
+}
+@media (min-width: 1200px) {
+  header.masthead h1, header.masthead .h1 {
+    font-size: 3.5rem;
+  }
+}
+
+h1{
+  color: #fff;
+}
+
+h2{
+  color: #fff;
+}
+
+.h1-h2{
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 2dvh;
+}
+
+#slide {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #04263f;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  font-family: "Merriweather Sans", sans-serif;
+  margin: 0 auto;
+}
+
+#slide .table {
+  table-layout: auto;
+  width: 100%;
+  border-collapse: collapse;
+  border-color: transparent;
+}
+
+.container-calendar {
+  height: 90dvh;
+  width: 80dvw;
+  overflow: auto;
+  scroll-snap-type: y mandatory;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Esto centra verticalmente */
+
+}
+
+.container-calendar h2{
+  color:#000000;
+  font-size: 2vh;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.container-calendar h3{
+  color:#04263f;
+  font-size: 1.5vh;
+  font-weight: 700;
+  text-align: center;
+
+}
+
+/* Contenedor general */
+.container-staff {
+  width: 80dvw;
+  height: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: row; /* Mantiene la estructura en pantallas grandes */
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 2rem;
+  margin: 20px auto;
+  gap: 20px; /* Espacio entre elementos */
+}
+
+/* Elementos individuales (imagen, texto, carrusel) */
+.staff-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Imagen */
+.staff-img {
+  max-width: 432px;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+/* Texto */
+.staff-text {
+  max-width: 432px;
+  padding: 10px;
+  text-align: justify;
+}
+
+/* Carrusel */
+.container-slide-staff {
+  display: flex;
+  justify-content: center;
+}
+
+
+.container-slide {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+.slide{
+  width: 25rem;
+  max-width: 1000px;
+  height: 25rem;
+  overflow: hidden;
+  border-radius: 10px;
+  object-fit: fill;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+}
+
+.slide ul{
+  display: flex;
+  padding: 0;
+  width: 550%;
+  animation: slide 15s infinite; 
+  margin-top: 0;
+}
+
+/* MEDIA QUERIES para mobile */
+@media (max-width: 768px) {
+  .container-staff {
+    flex-direction: column; /* En móviles se apilan los elementos */
+    width: 80%;
+    padding: 15px;
+    overflow: hidden;
+  }
+
+  .staff-item {
+    width: 100%;
+  }
+
+  .staff-img {
+    max-width: 100%; /* Se ajusta al contenedor */
+  }
+
+  .staff-text {
+    max-width: 100%;
+    text-align: justify;
+  }
+
+  .slide {
+    max-width: 100%;
+    overflow: hidden;
+  }
+}
+
+@keyframes slide {
+  0%{margin-left: 0;}
+  15%{margin-left: 0;} 
+
+  20%{margin-left: -110%;}
+  35%{margin-left: -110%;} 
+
+  40%{margin-left: -220%;}
+  55%{margin-left: -220%;} 
+
+  60%{margin-left: -330%;}
+  75%{margin-left: -330%;} 
+
+  80%{margin-left: -440%;}
+  90%{margin-left: -440%;}
+
+  95%{margin-left: 0;}
+
+}
+#FormularioConsulta {
+  max-width: 800px; /* Limita el ancho máximo del contenedor */
+  width: 100%; /* Asegura que se ajuste al ancho disponible */
+  height: auto;
+  padding: 20px; /* Reduce el padding para evitar que los inputs sobresalgan */
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5; /* Ajusta el line-height para mejor legibilidad */
+  color: #04263f;
+  background-color: #fff;
+  border: 1px solid #fff;
+  border-radius: 0.375rem;
+  opacity: 0.95; /* Ajusta la opacidad para mejor contraste */
+  font-family: "Merriweather Sans", sans-serif;
+  margin: 20px auto; /* Centra el contenedor horizontalmente */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Agrega una sombra para un efecto más moderno */
+}
+
+#FormularioConsulta .table {
+  table-layout: auto;
+  width: 100%;
+  border-collapse: collapse;
+  border-color: transparent;
+}
+
+#FormularioConsulta .container {
+  padding: 20px;
+}
+
+#FormularioConsulta input[type="text"],
+#FormularioConsulta input[type="password"],
+#FormularioConsulta input[type="email"],
+#FormularioConsulta input[type="tel"],
+#FormularioConsulta input[type="date"],
+#FormularioConsulta input[type="number"],
+#FormularioConsulta textarea,
+#FormularioConsulta select {
+  width: 100%; /* Asegura que los inputs ocupen todo el ancho del contenedor */
+  padding: 10px;
+  margin-bottom: 15px; /* Espaciado entre los inputs */
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-family: "Merriweather Sans", sans-serif;
+  box-sizing: border-box; /* Incluye padding y borde en el ancho total */
+}
+
+#FormularioConsulta button {
+  width: 100%; /* Botón ocupa todo el ancho del contenedor */
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #04263f;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#FormularioConsulta button:hover {
+  background-color: #878e94; /* Cambia el color al pasar el mouse */
+}
+
+.historias-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.historia-item {
+    display: flex;
+    justify-content: flex-start; /* Alinea los botones al inicio */
+    align-items: center; /* Centra verticalmente los botones */
+    gap: 10px; /* Espaciado entre los botones */
+    padding: 0.25rem 0; /* Espaciado interno */
+    border-bottom: 1px solid #eee; /* Línea divisoria entre historias */
+}
+
+.historia-item2 {
+  display: flex;
+  justify-content: flex-start; /* Alinea los botones al inicio */
+  align-items: center; /* Centra verticalmente los botones */
+  gap: 10px; /* Espaciado entre los botones */
+  padding: 0.25rem 0; /* Espaciado interno */
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    background-color: #04263f;
+    color: #fff;
+    border: none;
+    border-radius: 0.375rem;
+    text-decoration: none;
+}
+
+.btn-sm:hover {
+    background-color: #878e94; /* Color cuando se pasa el mouse */
+}
+
+.btn-sm-danger {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-sm-danger:hover {
+    background-color: #c82333; /* Color cuando se pasa el mouse */
+}
+
+/* Estilos para el pie de la tabla */
+tfoot {
+    border-top: 1px solid #ddd; /* Línea divisoria */
+}
+
+tfoot td {
+    padding-top: 10px;
+    text-align: center; /* Centra el contenido */
+}
+
+tfoot .btn {
+    width: 8dvw; /* Botón ocupa todo el ancho del contenedor */
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    align-items: end; /* Alinea los botones al final */
+}
+
+.tfoot-btns {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.tfoot-btns .btn,
+.tfoot-btns .btn-sm {
+  min-width: 120px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+}
+
+/* MEDIA QUERIES para mobile */
+@media (max-width: 768px) {
+  
+   .menu-toggle {
+    display: block; /* Muestra el botón hamburguesa */
+  }
+
+  .lista-nav {
+    display: none; /* Oculta el menú por defecto */
+    flex-direction: column;
+    background-color: white;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    padding: 15px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .lista-nav.show {
+    display: flex; /* Muestra el menú cuando está activo */
+  }
+
+  .lista-nav li {
+    margin: 10px 0;
+  }
+
+  body {
+    font-size: 0.9rem; /* Reduce el tamaño de fuente para móviles */
+    line-height: 1.4;
+  }
+
+
+  #FormularioConsulta {
+    width: 60%; /* Reduce el ancho del formulario */
+    padding: 15px; /* Ajusta el padding */
+    margin: 10px auto; /* Centra el formulario */
+    box-shadow: none; /* Elimina la sombra para simplificar el diseño */
+  }
+
+  #FormularioConsulta input,
+  #FormularioConsulta select,
+  #FormularioConsulta textarea {
+    font-size: 0.9rem; /* Reduce el tamaño de los inputs */
+    padding: 8px; /* Ajusta el padding */
+  }
+
+  #FormularioConsulta button {
+    font-size: 0.9rem; /* Reduce el tamaño del botón */
+    padding: 8px;
+  }
+
+  /* Ajustes para tablas */
+  table {
+    width: 100%; /* Asegura que la tabla ocupe todo el ancho */
+    font-size: 0.9rem; /* Reduce el tamaño de fuente */
+    border-collapse: collapse;
+  }
+
+  table th,
+  table td {
+    padding: 10px; /* Espaciado interno */
+    text-align: left; /* Alinea el texto a la izquierda */
+  }
+
+  table th {
+    background-color: #f8f9fa; /* Fondo para encabezados */
+    font-weight: bold;
+  }
+
+  /* Ajustes para botones en tablas */
+  .btn-sm,
+  .btn-sm-danger {
+    width: 100%; /* Los botones ocupan todo el ancho disponible */
+    text-align: center;
+    font-size: 0.875rem; /* Ajusta el tamaño de fuente */
+    padding: 10px;
+    margin-bottom: 5px; /* Espaciado entre botones */
+  }
+
+  .btn-sm {
+    background-color: #04263f; /* Color púrpura para botones */
+    color: #fff;
+  }
+
+  .btn-sm-danger {
+    background-color: #dc3545; /* Color rojo para botones de eliminar */
+    color: #fff;
+  }
+
+  .btn-sm:hover,
+  .btn-sm-danger:hover {
+    opacity: 0.9; /* Efecto hover */
+  }
+
+  /* Contenedor de acciones */
+  .acciones-container {
+    display: flex;
+    flex-direction: column; /* Apila los botones verticalmente */
+    gap: 5px; /* Espaciado entre botones */
+  }
+
+  /* Ajustes para contenedores */
+  .container-staff {
+    flex-direction: column; /* Apila los elementos verticalmente */
+    width: 100%; /* Ajusta el ancho al 100% */
+    padding: 10px;
+  }
+
+  .staff-item {
+    width: 100%; /* Asegura que los elementos ocupen todo el ancho */
+    margin-bottom: 15px; /* Espaciado entre elementos */
+  }
+
+  .staff-img {
+    max-width: 100%; /* Ajusta la imagen al ancho del contenedor */
+    height: auto; /* Mantiene la proporción */
+  }
+
+  .staff-text {
+    font-size: 0.9rem; /* Reduce el tamaño del texto */
+    text-align: justify;
+  }
+
+  .slide {
+    max-width: 100%; /* Ajusta el ancho del carrusel */
+    height: auto; /* Ajusta la altura automáticamente */
+  }
+
+  .lista-nav {
+    flex-direction: column; /* Apila los elementos del menú */
+    gap: 10px; /* Espaciado entre elementos */
+    text-align: center;
+  }
+
+  .lista-nav a {
+    font-size: 0.9rem; /* Reduce el tamaño del texto */
+    padding: 10px; /* Aumenta el área clickeable */
+  }
+
+  .menu-toggle {
+    font-size: 1.5rem; /* Ajusta el tamaño del botón hamburguesa */
+  }
+
+.container-calendar {
+  height: 90dvh;
+  width: 80dvw;
+  overflow: auto;
+  scroll-snap-type: y mandatory;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Esto centra verticalmente */
+
+}
+
+  #FormularioConsulta table,
+  #FormularioConsulta .table {
+    border-radius: 0.375rem;
+  }
+
+  #FormularioConsulta thead {
+    display: none;
+  }
+
+  #FormularioConsulta tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+    background: #fff;
+  }
+
+  #FormularioConsulta td {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 8px;
+    align-items: flex-start;
+    border: none;
+    position: relative;
+    font-size: 1rem;
+    word-break: break-word; /* <-- Esto ayuda a que las fechas largas no se desborden */
+  }
+
+  #FormularioConsulta td::before {
+    content: attr(data-label);
+    flex: 0 0 45%;
+    font-weight: bold;
+    color: #04263f;
+    padding-right: 10px;
+    font-size: 1rem;
+    text-align: left;
+    min-width: 110px;
+    display: block;
+  }
+
+  /* Cada bloque de historia apilado */
+  .historia-item2,
+  .historia-item {
+    display: grid !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 0.5rem 0 !important;
+    width: 100%;
+    font-size: 0.52rem !important;
+  }
+
+  /* Botones de acciones apilados */
+  .historia-item2 a,
+  .historia-item a {
+    display: grid !important;
+    width: 100% !important;
+    margin-bottom: 4px;
+    text-align: center;
+    padding: 12px 0 !important;
+    font-size: 0.55rem !important;
+  }
+
+  /* Pie de tabla: botones apilados */
+  .tfoot-btns {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .tfoot-btns .btn,
+  .tfoot-btns .btn-sm {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 1rem;
+    padding: 12px 0;
+  }
+}
+
+.staff-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+    .staff-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+    }
+.staff-card {
+        max-width: 90vw;
+    }
+}
+
+@media (max-width: 768px) {
+    .enfermedades-columns {
+      column-count: 2 !important;
+      column-gap: 0.2rem !important;
+    }
+    .pie-select {
+      width: 100% !important;
+    }
+}
+
+.enfermedades-columns {
+    column-count: 6;
+    column-gap: 0.2rem;
+}
+
+.enfermedades-columns div {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  padding: 2px 0;
+}
+
+.side-container {
+  display: flex;
+  margin: 0.5rem 0;
+}
+    
+.pie-type {
+  flex: 1;
+  border-top: #04263f 1.5px solid !important;
+  padding-top: 0.5rem;
+}
+    
+.pie-select {
+  width: fit-content !important;
+  border: #04263f 1px solid !important;
+}
+
+.pie-type label {
+  display:block;
+  margin-bottom: 0.2rem;
+}
+
+#id_alergias {
+    column-count: 4;
+    column-gap: 0.2rem;
+}
+
+#id_patologias_pie_derecho {
+    column-count: 2;
+    column-gap: 0.2rem;
+}
+
+#id_patologias_pie_izquierdo {
+    column-count: 2;
+    column-gap: 0.2rem;
+}
+
+.datos-invalidos {
+    color: #dc3545 !important;
+}

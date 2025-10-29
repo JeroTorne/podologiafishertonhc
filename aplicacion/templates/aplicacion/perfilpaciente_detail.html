@@ -1,0 +1,37 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+
+{% block Body %}
+<header class="mastheadconsultas">
+  <div class="container px-4 px-lg-5 h-100">
+    <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+      <table id="FormularioConsulta" style="text-align: justify;width: auto;border-color: #c8c4c4;" class="table">  
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Whatsapp</th>
+        </tr>
+          <tbody>
+            <tr>
+              <td>{{ object }}</td>
+              <td>{{ object.id }}</td>
+              <td>{{ object.nombre }}</td>
+              <td>{{ object.apellido }}</td>
+              <td>{{ object.email }}</td>
+              <td>{{ object.whatsapp }}</td>
+              <td><a href="{% url 'lista_pacientes' %}"class="btn btn-primary" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Volver&nbsp;&nbsp;<i class="fa fa-share fa-sm" title="List Back"></i>
+
+            </tr>
+          </tbody>
+          
+        </table>
+      </div>
+    </div>
+</header>
+
+
+{% endblock Body %}

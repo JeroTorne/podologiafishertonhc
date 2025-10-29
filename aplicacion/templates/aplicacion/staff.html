@@ -1,0 +1,34 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+{% block Body %}
+<header class="mastheadconsultas">
+    <div class="container-staff">
+        <div class="staff-item">
+            <img src="{% static 'aplicacion/assets/img/webp/abme.webp' %}" class="staff-img" alt="Veronica Weedon podologa en su consultorio">
+        </div>
+        
+        <div class="staff-item staff-text">
+            
+            <p><strong style="font-size:large; color: #04263f;">Veronica Weedon</strong> Matrícula Colegio de Podólogos de la Pcia de Santa Fe N° 02-1582. 
+            Me recibí de Técnica Universitaria en Podología en Universidad del Gran Rosario en el año 2019. 
+            Actualmente estoy cursando la Licenciatura en Podología en la Universidad Nacional del Litoral en Santa Fé.</p>
+        </div>
+
+        <div class="staff-item">
+            <div class="container-slide-staff">
+                <div class="slide">
+                    <ul>
+                        <li><img src="{% static 'aplicacion/assets/img/webp/ugr.webp' %}" alt="Título de la tecnicatura en podología de Veronica Weedon"></li>
+                        <li><img src="{% static 'aplicacion/assets/img/webp/recontruccion.webp' %}" alt="Certificado de curso en reconstrucción de uñas"></li>
+                        <li><img src="{% static 'aplicacion/assets/img/webp/unas.webp' %}" alt="Certificado de curso de uñas esculpidas"></li>
+                        <li><img src="{% static 'aplicacion/assets/img/webp/anestesico.webp' %}" alt="Certificado de curso de aplicación de anestésico"></li>
+                        <li><img src="{% static 'aplicacion/assets/img/webp/recontruccion.webp' %}" alt="Certificado de curso en reconstrucción de uñas"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+{% endblock Body %}

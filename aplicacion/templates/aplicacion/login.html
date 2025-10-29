@@ -1,0 +1,38 @@
+{% extends "aplicacion/index.html" %}
+{% load static %}
+
+{% block Body %}
+    <header class="mastheadconsultas">
+                <br>
+
+
+                <form id="FormularioConsulta" style="width: auto;" class="container" action="" method="post">
+                    {% csrf_token %}
+                    <table id="FormularioConsulta" style="text-align: justify; margin: 10px auto !important;" class="table">
+                    <div class="side-container">
+                    <div class="pie-type" style="width: 100% !important;border-top: none !important;">
+                        <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                        {{ form.username }}
+                    </div>
+                    </div>
+                    <div class="side-container">
+                    <div class="pie-type" style="width: 100% !important;border-top: none !important;">
+                        <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                        {{ form.password }}
+                    </div>
+                    </div>                    
+                                    {% if mensaje %}
+                <h4>
+                    <p class="datos-invalidos">
+                    {{ mensaje }}
+                    </p>
+                </h4>
+                {% endif %}
+                <button class="pacientebtn" style="width:100%;" type="submit">Iniciar Sesión</button>
+                </table>
+    
+                </form>
+                
+    </header>        
+        
+{% endblock Body %}
