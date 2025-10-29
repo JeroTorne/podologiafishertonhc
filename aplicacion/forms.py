@@ -89,55 +89,6 @@ class HistoriaClinicaForm(forms.ModelForm):
         })
 
 
-enfermedades = [
-    'cardiopatias',
-    'cirugias',
-    'fumador',
-    'hpv',
-    'otras',
-]
-for enfermedad in enfermedades:
-    EnfermedadesL.objects.get_or_create(nombre=enfermedad)
-
-alergias = [
-    'comidas',
-    'estacional',
-    'insectos',
-    'medicamentos',
-]
-for alergia in alergias:
-    Alergia.objects.get_or_create(nombre=alergia)
-
-patologias_pie_derecho = [
-    'ampollas',
-    'amputaciones',
-    'grietas',
-    'helomas',
-    'hiperqueratosis',
-    'onicocriptosis',
-    'onicofosis',
-    'onicomicosis',
-    'osteopatias',
-    'ulceras',
-]
-for patologia in patologias_pie_derecho:
-    PatologiasPieDerecho.objects.get_or_create(nombre=patologia)
-
-patologias_pie_izquierdo = [
-    'ampollas',
-    'amputaciones',
-    'grietas',
-    'helomas',
-    'hiperqueratosis',
-    'onicocriptosis',
-    'onicofosis',
-    'onicomicosis',
-    'osteopatias',
-    'ulceras',
-]
-for patologia in patologias_pie_izquierdo:
-    PatologiasPieIzquierdo.objects.get_or_create(nombre=patologia)
-
 class SeguimientoConsultaForm(forms.ModelForm):
     class Meta:
         model = SeguimientoConsulta
