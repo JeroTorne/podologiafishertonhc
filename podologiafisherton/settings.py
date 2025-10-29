@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-sf5+8y)+$!dykl@1qz0&ov6ho_z958%hb-6=x0%eein*#vc&j#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['podofisherton.pythonanywhere.com']
 
 
 # Application definition
@@ -75,11 +75,19 @@ WSGI_APPLICATION = 'podologiafisherton.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'Pacientes.db',
-    }
+    'default': { 
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'podofisherton$default',
+        'USER': 'podofisherton',
+        'PASSWORD': 'Podowee1234',
+        'HOST': 'podofisherton.mysql.pythonanywhere-services.com',
+        'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'use_unicode': True,
+        }},
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
