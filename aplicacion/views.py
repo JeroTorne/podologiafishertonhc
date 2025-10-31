@@ -182,11 +182,18 @@ def buscar_paciente(request):
 def buscar_paciente2(request):
     nombre = request.GET.get('nombre', '').strip()
     apellido = request.GET.get('apellido', '').strip()
+    
     if nombre or apellido:
-        paciente = PerfilPaciente.objects.filter(
-            Q(nombre__icontains=nombre) | Q(apellido__icontains=apellido)
-        )
+        paciente = PerfilPaciente.objects.all()
+        
+        if nombre:
+            paciente = paciente.filter(nombre__icontains=nombre)
+        
+        if apellido:
+            paciente = paciente.filter(apellido__icontains=apellido)
+        
         return render(request, "aplicacion/listadopacientes.html", {"paciente": paciente})
+    
     return redirect('lista_pacientes')
 
 class PacienteList(LoginRequiredMixin,ListView):
