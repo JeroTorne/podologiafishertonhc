@@ -21,9 +21,11 @@
                         <td>{{ p.id }}</td>
                         <td>{{ p.nombre }}</td>
                         <td>{{ p.apellido }}</td>
+                        <td><a style="display: flex;justify-content: center;" href="{% url 'editar_paciente' p.id_usuario %}" class="btn-sm btn btn-primary">✎ Editar Paciente</a></td>
                     </tr>
                     {% endfor %}
-                    <td><a href="{% url 'inicio' %}"class="btn btn-primary" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Inicio</a></td>
+
+                    <td><a href="{% url 'inicio' %}" class="btn-sm btn btn-primary">Inicio</a></td>
 
                     </table>
                 </tbody>

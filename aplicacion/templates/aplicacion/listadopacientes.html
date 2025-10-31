@@ -54,6 +54,7 @@
                         {% for historia in historias %}
                         <div class="historia-item2 mb-2" style=" justify-content: flex-start; align-items: center; gap: 10px;">
                             <!-- Botón para ver la historia -->
+                             
                             <a href="{% url 'update_historia' historia.id %}" class="btn-sm btn btn-primary">
                                 ✎ Ver Historia #{{ forloop.counter }}
                             </a>
@@ -69,7 +70,7 @@
                 </td>                     
             {% else %}
 
-
+                        <a style="display: flex;justify-content: center; margin-bottom: 0.5rem;" href="{% url 'editar_paciente' paciente.id_usuario %}" class="btn-sm btn btn-primary">✎ Editar Paciente</a>
                         <a style="display: flex;justify-content: center;" href="{% url 'delete_paciente' paciente.id_usuario %}" class="btn-sm-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este paciente?');">✖ Eliminar Paciente</a>
 
                 <td>
@@ -93,6 +94,7 @@
     <tr>
         <td colspan="6">
             <div style="display: flex;justify-content: flex-end;" class="tfoot-btns">
+                <a href="{% url 'editar_paciente' paciente.id_usuario %}" class="btn btn-primary btn-sm">✎ Editar Paciente</a>
                 <a href="{% url 'crear_historia_clinica' paciente.id_usuario %}" class="btn btn-primary btn-sm">✚ Nueva Historia</a>
                 <a href="javascript:history.back()" class="btn btn-secondary btn-sm">Volver</a>            </div>
         </td>

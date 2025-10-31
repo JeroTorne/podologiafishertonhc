@@ -253,3 +253,22 @@ def eliminar_seguimiento(request, seguimiento_id):
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 #-------////----------FIN ELIMINAR SEGUIMIENTO--------////------------------#
+
+#-------////----------EDITAR PACIENTE--------////------------------
+
+@user_passes_test(is_admin)
+def editar_paciente(request, pk):
+    paciente = get_object_or_404(PerfilPaciente, pk=pk)
+    
+    if request.method == 'POST':
+        form = PacienteForm(request.POST, instance=paciente)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Perfil del paciente actualizado correctamente.')
+            return redirect('lista_pacientes')  # o la URL que prefieras
+    else:
+        form = PacienteForm(instance=paciente)
+    
+    return render(request, 'aplicacion/editar_paciente.html', {'form': form, 'paciente': paciente})
+
+#-------////----------FIN EDITAR PACIENTE--------////------------------#

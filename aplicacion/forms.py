@@ -9,7 +9,11 @@ class PacienteForm(forms.ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
             'apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
             'dni': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DNI'}),
-            'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Fecha de Nacimiento', 'type': 'date'}),
+            'fecha_nacimiento': forms.DateInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Fecha de Nacimiento', 
+                'type': 'date'
+            }, format='%Y-%m-%d'),    
             'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(+549) 11 1234-5678', 'type': 'tel'}),
             'domicilio': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Domicilio'}),
             'localidad': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Localidad'}),
