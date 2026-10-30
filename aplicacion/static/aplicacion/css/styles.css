@@ -430,6 +430,9 @@ h2{
 #FormularioConsulta {
   max-width: 800px; /* Limita el ancho máximo del contenedor */
   width: 100%; /* Asegura que se ajuste al ancho disponible */
+  /* Sin esto el padding se suma al 100% y la tarjeta se desborda 40px de su
+     contenedor, quedando descentrada. */
+  box-sizing: border-box;
   height: auto;
   padding: 20px; /* Reduce el padding para evitar que los inputs sobresalgan */
   font-size: 1rem;
