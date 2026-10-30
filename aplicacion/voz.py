@@ -58,6 +58,10 @@ COMANDOS = {
     'repetir': ('repetir', 'repeti', 'de nuevo', 'otra vez', 'no entendi'),
     'saltear': ('saltear', 'saltar', 'omitir', 'pasar'),
     'terminar': ('terminar', 'terminamos', 'finalizar', 'cerrar', 'basta'),
+    # Sin "otro" ni "otra" a secas: chocarían con la opción "Otras" de
+    # enfermedades, que es una respuesta válida y no un comando.
+    'otro': ('no esta en la lista', 'ninguno de esos', 'ninguna de esas',
+             'anotar aparte', 'no figura'),
 }
 
 # Cómo puede llegar a decirlo en voz alta, más allá de la etiqueta del modelo.

@@ -27,6 +27,10 @@ document.addEventListener('DOMContentLoaded', function () {
         escuchado: document.getElementById('ev-escuchado'),
         resultado: document.getElementById('ev-resultado'),
         candidatos: document.getElementById('ev-candidatos'),
+        lista: document.getElementById('ev-lista'),
+        otro: document.getElementById('ev-otro'),
+        texto: document.getElementById('ev-texto'),
+        borrar: document.getElementById('ev-borrar'),
         vozAlta: document.getElementById('ev-voz-alta'),
         diagnostico: document.getElementById('ev-diagnostico'),
         log: document.getElementById('ev-log'),
@@ -38,8 +42,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let escuchando = false;
     let activa = false;
     let procesando = false;
+    let editando = false;
     let temporizador = null;
     let textoAcumulado = '';
+    let ultimoTexto = '';
 
     // ------------------------------------------------------------------
     // Diagnóstico
@@ -143,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function escuchar() {
-        if (!activa || escuchando || procesando) {
+        if (!activa || escuchando || procesando || editando) {
             return;
         }
         const paso = pasos[indice];
@@ -199,7 +205,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const paso = pasos[indice];
-        textoAcumulado = '';
+        ultimoTexto = '';
+        // Arrancamos de lo que el campo ya tenga, para que el dictado sume en
+        // vez de pisar lo que se haya anotado antes.
+        textoAcumulado = paso.tipo === 'texto' ? (valorActual(paso.campo) || '') : '';
+
         elementos.progreso.textContent = 'Pregunta ' + (indice + 1) + ' de ' + pasos.length;
         elementos.barra.style.width = ((indice / pasos.length) * 100) + '%';
         elementos.pregunta.textContent = paso.pregunta;
@@ -207,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
         elementos.resultado.textContent = '';
         elementos.resultado.className = 'ev-resultado';
         elementos.candidatos.innerHTML = '';
+        pintarLista(paso);
 
         marcarEstado('leyendo', 'Leyendo la pregunta...');
         hablar(paso.pregunta, escuchar);
@@ -280,18 +291,25 @@ document.addEventListener('DOMContentLoaded', function () {
             retroceder();
         } else if (comando === 'repetir') {
             mostrarPaso();
+        } else if (comando === 'otro') {
+            anotarAparte();
         } else if (comando === 'terminar') {
             terminar();
         }
     }
 
     function aplicarResultado(paso, datos, textoCrudo) {
+        // Lo guardamos por si resulta que no está en la lista y hay que
+        // anotarlo aparte. Acá ya sabemos que no era un comando.
+        ultimoTexto = textoCrudo;
+
         if (paso.tipo === 'texto') {
             textoAcumulado = (textoAcumulado + ' ' + textoCrudo).trim();
             aplicarValores(paso, [textoAcumulado]);
-            elementos.resultado.className = 'ev-resultado ev-ok';
-            elementos.resultado.textContent = textoAcumulado;
-            marcarEstado('escuchando', 'Seguí dictando, o decí "siguiente" para continuar.');
+            elementos.texto.value = textoAcumulado;
+            elementos.resultado.className = 'ev-resultado';
+            elementos.resultado.textContent = '';
+            marcarEstado('escuchando', 'Seguí dictando, corregí a mano, o decí "siguiente".');
             return;
         }
 
@@ -305,6 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         aplicarValores(paso, datos.valores);
+        marcarSeleccion(paso);
         const leido = datos.textos.length ? datos.textos.join(', ') : 'Ninguna';
 
         if (datos.confianza === 'media') {
@@ -320,6 +339,133 @@ document.addEventListener('DOMContentLoaded', function () {
         elementos.resultado.className = 'ev-resultado ev-ok';
         elementos.resultado.textContent = leido;
         marcarEstado('ok', 'Anotado');
+        programarAvance();
+    }
+
+    // ------------------------------------------------------------------
+    // La lista de opciones del campo
+    // ------------------------------------------------------------------
+
+    // Hace de machete (no hay por qué saberse de memoria los 17 remedios para
+    // la presión) y además es el plan B: se puede tocar en vez de dictar.
+    function pintarLista(paso) {
+        const esTexto = paso.tipo === 'texto';
+        elementos.lista.innerHTML = '';
+        elementos.otro.style.display = esTexto ? 'none' : 'inline-block';
+        elementos.texto.style.display = esTexto ? 'block' : 'none';
+        elementos.borrar.style.display = esTexto ? 'inline-block' : 'none';
+
+        if (esTexto) {
+            // Lo dictado se ve y se puede arreglar a mano sin salir del panel.
+            elementos.texto.value = textoAcumulado;
+            return;
+        }
+
+        const multiple = paso.tipo === 'opciones';
+        paso.opciones.forEach(function (opcion) {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'ev-opcion';
+            boton.textContent = opcion.texto;
+            boton.dataset.valor = opcion.valor;
+            boton.addEventListener('click', function () {
+                elegirAMano(paso, opcion, multiple);
+            });
+            elementos.lista.appendChild(boton);
+        });
+
+        marcarSeleccion(paso);
+    }
+
+    // Deja marcadas las opciones que quedaron puestas en el formulario, sin
+    // importar si las eligió la voz o el dedo.
+    function marcarSeleccion(paso) {
+        if (paso.tipo === 'texto') {
+            return;
+        }
+        const campos = camposDe(paso.campo);
+        const puestos = [];
+        if (paso.tipo === 'opciones') {
+            campos.forEach(function (input) {
+                if (input.checked) {
+                    puestos.push(input.value);
+                }
+            });
+        } else if (campos.length) {
+            puestos.push(campos[0].value);
+        }
+
+        elementos.lista.querySelectorAll('.ev-opcion').forEach(function (boton) {
+            boton.classList.toggle('elegida', puestos.indexOf(boton.dataset.valor) !== -1);
+        });
+    }
+
+    function elegirAMano(paso, opcion, multiple) {
+        cancelarAvance();
+
+        if (multiple) {
+            // En las de varias respuestas cada toque suma o saca una, y no
+            // avanzamos: puede querer marcar tres cosas seguidas.
+            const campos = camposDe(paso.campo);
+            campos.forEach(function (input) {
+                if (input.value === opcion.valor) {
+                    input.checked = !input.checked;
+                }
+            });
+            resaltar(paso.campo);
+            marcarSeleccion(paso);
+            elementos.resultado.className = 'ev-resultado ev-ok';
+            elementos.resultado.textContent = textosElegidos(paso);
+            return;
+        }
+
+        aplicarValores(paso, [opcion.valor]);
+        marcarSeleccion(paso);
+        elementos.resultado.className = 'ev-resultado ev-ok';
+        elementos.resultado.textContent = opcion.texto;
+        elementos.candidatos.innerHTML = '';
+        marcarEstado('ok', 'Anotado');
+        programarAvance();
+    }
+
+    function textosElegidos(paso) {
+        const elegidos = [];
+        camposDe(paso.campo).forEach(function (input) {
+            if (input.checked) {
+                const opcion = paso.opciones.find(function (o) {
+                    return o.valor === input.value;
+                });
+                if (opcion) {
+                    elegidos.push(opcion.texto);
+                }
+            }
+        });
+        return elegidos.length ? elegidos.join(', ') : 'Ninguna';
+    }
+
+    // Para lo que la lista no contempla: en vez de perderlo, queda escrito en
+    // Observaciones con el nombre del campo al que correspondía.
+    function anotarAparte() {
+        const paso = pasos[indice];
+        if (!ultimoTexto) {
+            marcarEstado('duda', 'Decilo primero y después tocá este botón.');
+            return;
+        }
+
+        const campos = camposDe('observaciones');
+        if (!campos.length) {
+            return;
+        }
+        const anotacion = paso.etiqueta + ': ' + ultimoTexto;
+        campos[0].value = campos[0].value
+            ? campos[0].value.replace(/\s*$/, '') + '\n' + anotacion
+            : anotacion;
+        resaltar('observaciones');
+
+        elementos.resultado.className = 'ev-resultado ev-ok';
+        elementos.resultado.textContent = 'Anotado en Observaciones: ' + ultimoTexto;
+        registrar('anotado aparte: ' + anotacion);
+        marcarEstado('ok', 'Anotado aparte');
         programarAvance();
     }
 
@@ -412,7 +558,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // estamos esperando el avance automático y no hay nada en curso,
             // volvemos a escuchar. Mientras se lee la pregunta no, porque si no
             // el micrófono se escucha a sí mismo.
-            if (activa && !temporizador && !procesando && !hablando()) {
+            if (activa && !temporizador && !procesando && !editando && !hablando()) {
                 setTimeout(escuchar, 250);
             }
         };
@@ -505,6 +651,35 @@ document.addEventListener('DOMContentLoaded', function () {
     // ------------------------------------------------------------------
 
     botonIniciar.addEventListener('click', iniciar);
+    elementos.otro.addEventListener('click', anotarAparte);
+
+    // Mientras corrige con el teclado el micrófono queda en pausa: si no,
+    // seguiría sumando texto por detrás de lo que está escribiendo.
+    elementos.texto.addEventListener('focus', function () {
+        editando = true;
+        cancelarAvance();
+        dejarDeEscuchar();
+        marcarEstado('duda', 'Corrigiendo a mano. El micrófono está en pausa.');
+    });
+
+    elementos.texto.addEventListener('input', function () {
+        textoAcumulado = elementos.texto.value;
+        aplicarValores(pasos[indice], [textoAcumulado]);
+    });
+
+    elementos.texto.addEventListener('blur', function () {
+        editando = false;
+        escuchar();
+    });
+
+    elementos.borrar.addEventListener('click', function () {
+        textoAcumulado = '';
+        elementos.texto.value = '';
+        aplicarValores(pasos[indice], ['']);
+        elementos.resultado.textContent = '';
+        marcarEstado('escuchando', 'Borrado. Dictalo de nuevo.');
+        escuchar();
+    });
 
     if (elementos.diagnostico) {
         elementos.diagnostico.addEventListener('change', function () {

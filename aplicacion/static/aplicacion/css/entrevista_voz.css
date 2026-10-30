@@ -182,6 +182,79 @@ body.entrevista-abierta {
     background-color: rgba(148, 163, 184, 0.2);
 }
 
+/* La lista de opciones del campo: machete y plan B para tocar */
+
+.ev-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    max-height: 32vh;
+    margin-top: 1.5rem;
+    padding: 0.2rem;
+    overflow-y: auto;
+}
+
+.ev-opcion {
+    padding: 0.45rem 0.95rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+    background-color: rgba(148, 163, 184, 0.08);
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.ev-opcion:hover {
+    border-color: #38bdf8;
+    color: #f8fafc;
+}
+
+.ev-opcion.elegida {
+    border-color: #22c55e;
+    background-color: rgba(34, 197, 94, 0.18);
+    color: #86efac;
+    font-weight: 600;
+}
+
+.ev-otro {
+    margin-top: 1rem;
+    padding: 0.45rem 1rem;
+    border: 1px dashed rgba(148, 163, 184, 0.45);
+    border-radius: 8px;
+    background: none;
+    color: #94a3b8;
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+.ev-otro:hover {
+    border-color: #facc15;
+    color: #fde047;
+}
+
+/* Campos de texto libre: lo dictado se corrige acá mismo */
+
+.ev-texto {
+    display: none;
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 10px;
+    background-color: rgba(2, 6, 23, 0.5);
+    color: #f1f5f9;
+    font-family: inherit;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.ev-texto:focus {
+    border-color: #38bdf8;
+    outline: none;
+}
+
 /* Controles */
 
 .ev-controles {

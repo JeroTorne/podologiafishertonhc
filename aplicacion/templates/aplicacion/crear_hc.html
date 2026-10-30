@@ -227,6 +227,19 @@
         <div class="ev-resultado" id="ev-resultado"></div>
         <div class="ev-candidatos" id="ev-candidatos"></div>
 
+        <!-- Las opciones del campo: sirven de machete y se pueden tocar -->
+        <div class="ev-lista" id="ev-lista"></div>
+        <button type="button" class="ev-otro" id="ev-otro">
+            No está en la lista, anotarlo en Observaciones
+        </button>
+
+        <!-- En los campos de texto libre, lo dictado se puede corregir acá -->
+        <textarea class="ev-texto" id="ev-texto" rows="4"
+                  placeholder="Acá va apareciendo lo que dictes. Podés corregirlo a mano."></textarea>
+        <button type="button" class="ev-otro" id="ev-borrar">
+            Borrar y dictar de nuevo
+        </button>
+
         <div class="ev-controles">
             <button type="button" id="ev-repetir">Repetir pregunta</button>
             <button type="button" id="ev-atras">Anterior</button>
