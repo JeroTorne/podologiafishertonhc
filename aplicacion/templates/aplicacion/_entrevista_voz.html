@@ -22,17 +22,31 @@ cuando se viene de crear un paciente y sigue la historia clínica.
     <i class="fas fa-microphone"></i> Completar por voz
 </button>
 
+<button type="button" class="ev-lanzador ev-secundario" id="ev-rapido">
+    <i class="fas fa-pen"></i> Dictado rápido
+</button>
+
+<!-- Testigo del dictado rápido: queda flotando con la entrevista cerrada -->
+<div class="ev-testigo" id="ev-testigo">
+    <span class="ev-punto"></span>
+    <span id="ev-testigo-texto"></span>
+</div>
+
 <div class="ev-aviso" id="ev-aviso">
     <strong>Revisá antes de guardar.</strong> Los campos que completó la
     entrevista quedaron marcados en amarillo. Corregí lo que haga falta y
     recién ahí apretá Guardar.
+    <br>
+    Si el paciente recuerda algo más, encendé <strong>Dictado rápido</strong>
+    y decí &laquo;anotá en observaciones…&raquo; sin volver a abrir la entrevista.
 </div>
 
 <div class="ev-panel" id="entrevista-voz"
      data-guion="{{ guion|default:'historia' }}"
      data-autoiniciar="{% if autoiniciar %}1{% endif %}"
      data-guion-url="{% url 'guion_entrevista' %}"
-     data-interpretar-url="{% url 'interpretar_respuesta' %}">
+     data-interpretar-url="{% url 'interpretar_respuesta' %}"
+     data-dictado-url="{% url 'dictado_libre' %}">
     <div class="ev-caja">
 
         <div class="ev-progreso" id="ev-progreso"></div>

@@ -19,6 +19,15 @@ import json
 from datetime import datetime
 from . import voz
 
+#-------////----------SI ES ADMIN--------////------------------#
+
+# Va antes que las vistas porque los decoradores se evalúan al importar el
+# archivo: si queda más abajo, la primera vista que la use rompe el import.
+def is_admin(user):
+    return user.is_authenticated and user.is_superuser
+
+#-------////----------FIN SI ES ADMIN--------////------------------#
+
 #-------////----------INDEX--------////------------------#
 
 def index(request):
@@ -38,6 +47,7 @@ def turnos(request):
 
 #-------////----------CREAR PACIENTE--------////------------------#
 
+@user_passes_test(is_admin)
 def crear_paciente(request):
     if request.method == 'POST':
         form = PacienteForm(request.POST)
@@ -128,13 +138,6 @@ def login_request(request):
     return render(request, "aplicacion/login.html", {"form":miForm})
 
 #-------////----------FIN LOGIN--------////------------------#
-
-#-------////----------SI ES ADMIN--------////------------------#
-
-def is_admin(user):
-    return user.is_authenticated and user.is_superuser
-
-#-------////----------FIN SI ES ADMIN--------////------------------#
 
 #-------////----------CREAR HISTORIA CLINICA--------////------------------#
 
@@ -332,5 +335,43 @@ def interpretar_respuesta(request):
     resultado['ok'] = True
     resultado['comando'] = None
     return JsonResponse(resultado)
+
+
+@user_passes_test(is_admin)
+@require_POST
+def dictado_libre(request):
+    """Dictado suelto, con la entrevista ya cerrada.
+
+    Es para lo que el paciente recuerda al final: "anotá en observaciones que
+    también le molesta el talón". Siempre exige la palabra clave, porque en
+    este modo el micrófono queda abierto durante toda la consulta.
+    """
+    try:
+        datos = json.loads(request.body or b'{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': False, 'mensaje': 'Petición inválida.'}, status=400)
+
+    texto = datos.get('texto', '')
+
+    comando = voz.detectar_comando(texto)
+    if comando:
+        return JsonResponse({'ok': True, 'comando': comando})
+
+    # Los campos que la página dice tener se filtran igual contra la lista
+    # conocida, así que de acá no puede salir un campo cualquiera.
+    repartido = voz.interpretar_dictado(texto, datos.get('campos') or [])
+    if repartido is None:
+        return JsonResponse({'ok': True, 'ignorado': True})
+
+    campo, dicho = repartido
+    if not dicho:
+        return JsonResponse({'ok': True, 'ignorado': True})
+
+    return JsonResponse({
+        'ok': True,
+        'campo': campo,
+        'texto': dicho,
+        'etiqueta': voz.etiqueta_de(campo),
+    })
 
 #-------////----------FIN ENTREVISTA POR VOZ--------////------------------#

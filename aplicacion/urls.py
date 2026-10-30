@@ -54,5 +54,7 @@ urlpatterns = [
 
     path('entrevista/interpretar/', interpretar_respuesta, name='interpretar_respuesta'),
 
+    path('entrevista/dictado/', dictado_libre, name='dictado_libre'),
+
     #-------////----------FIN ENTREVISTA POR VOZ--------////------------------#
 ]

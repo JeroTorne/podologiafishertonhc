@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
         otro: document.getElementById('ev-otro'),
         activador: document.getElementById('ev-activador'),
         ayuda: document.getElementById('ev-ayuda'),
+        rapido: document.getElementById('ev-rapido'),
+        testigo: document.getElementById('ev-testigo'),
+        testigoTexto: document.getElementById('ev-testigo-texto'),
         texto: document.getElementById('ev-texto'),
         borrar: document.getElementById('ev-borrar'),
         vozAlta: document.getElementById('ev-voz-alta'),
@@ -45,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let activa = false;
     let procesando = false;
     let editando = false;
+    let modoRapido = false;
     let temporizador = null;
     let textoAcumulado = '';
     let ultimoTexto = '';
@@ -151,11 +155,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function escuchar() {
-        if (!activa || escuchando || procesando || editando) {
+        if ((!activa && !modoRapido) || escuchando || procesando || editando) {
             return;
         }
-        const paso = pasos[indice];
-        reconocimiento.continuous = paso.tipo === 'texto';
+        // En dictado rápido el micrófono no se corta entre frases: la consulta
+        // sigue y en cualquier momento puede aparecer algo para anotar.
+        reconocimiento.continuous = modoRapido || pasos[indice].tipo === 'texto';
         try {
             reconocimiento.start();
             escuchando = true;
@@ -573,12 +578,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 const alternativa = evento.results[i][0].transcript;
                 if (evento.results[i].isFinal) {
                     registrar('result final: "' + alternativa.trim() + '"');
-                    procesar(alternativa.trim());
+                    if (modoRapido) {
+                        procesarDictado(alternativa.trim());
+                    } else {
+                        procesar(alternativa.trim());
+                    }
                 } else {
                     parcial += alternativa;
                 }
             }
-            if (parcial) {
+            if (parcial && !modoRapido) {
                 elementos.escuchado.textContent = parcial;
             }
         };
@@ -612,6 +621,9 @@ document.addEventListener('DOMContentLoaded', function () {
             marcarEstado(corta ? 'error' : 'duda', texto);
             if (corta) {
                 activa = false;
+                if (modoRapido) {
+                    apagarRapido(texto);
+                }
             }
         };
 
@@ -622,7 +634,8 @@ document.addEventListener('DOMContentLoaded', function () {
             // estamos esperando el avance automático y no hay nada en curso,
             // volvemos a escuchar. Mientras se lee la pregunta no, porque si no
             // el micrófono se escucha a sí mismo.
-            if (activa && !temporizador && !procesando && !editando && !hablando()) {
+            if ((activa || modoRapido) && !temporizador && !procesando
+                    && !editando && !hablando()) {
                 setTimeout(escuchar, 250);
             }
         };
@@ -634,6 +647,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function iniciar() {
+        if (modoRapido) {
+            apagarRapido();
+        }
         if (!Reconocimiento) {
             alert('La entrevista por voz necesita Google Chrome o Microsoft Edge. '
                 + 'En este navegador no está disponible.');
@@ -727,6 +743,121 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ------------------------------------------------------------------
+    // Dictado rápido: la entrevista cerrada y el micrófono atento
+    // ------------------------------------------------------------------
+
+    // Para cuando el paciente se acuerda de algo cuando ya terminaron. El
+    // micrófono queda abierto toda la consulta, así que acá la palabra clave
+    // no es opcional: sin ella no se guarda nada.
+
+    function camposDictables() {
+        return ['observaciones', 'antecedentes_familiares', 'motivo_consulta',
+            'descripcion_seguimiento'].filter(function (campo) {
+            return camposDe(campo).length > 0;
+        });
+    }
+
+    function mostrarTestigo(texto, clase) {
+        elementos.testigo.className = 'ev-testigo visible' + (clase ? ' ' + clase : '');
+        elementos.testigoTexto.textContent = texto;
+    }
+
+    function encenderRapido() {
+        if (!Reconocimiento) {
+            alert('El dictado necesita Google Chrome o Microsoft Edge.');
+            return;
+        }
+        if (activa) {
+            terminar();
+        }
+        if (!camposDictables().length) {
+            alert('En esta página todavía no hay campos de texto para dictar.');
+            return;
+        }
+
+        permitirMicrofono().then(function () {
+            if (!reconocimiento) {
+                prepararReconocimiento();
+            }
+            modoRapido = true;
+            elementos.rapido.classList.add('ev-encendido');
+            elementos.rapido.textContent = 'Dictado rápido activo — tocá para parar';
+            mostrarTestigo('Escuchando. Decí «anotá en observaciones…»');
+            registrar('dictado rápido encendido');
+            escuchar();
+        }).catch(function (motivo) {
+            alert('No se pudo usar el micrófono: ' + motivo + '.');
+        });
+    }
+
+    function apagarRapido(aviso) {
+        modoRapido = false;
+        dejarDeEscuchar();
+        elementos.rapido.classList.remove('ev-encendido');
+        elementos.rapido.textContent = 'Dictado rápido';
+        if (aviso) {
+            mostrarTestigo(aviso, 'ev-malo');
+        } else {
+            elementos.testigo.className = 'ev-testigo';
+        }
+        registrar('dictado rápido apagado');
+    }
+
+    function procesarDictado(texto) {
+        procesando = true;
+        fetch(panel.dataset.dictadoUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({ texto: texto, campos: camposDictables() }),
+        })
+            .then(function (respuesta) { return respuesta.json(); })
+            .then(function (datos) {
+                procesando = false;
+
+                if (datos.comando === 'empezar') {
+                    apagarRapido();
+                    iniciar();
+                    return;
+                }
+                if (datos.comando === 'terminar') {
+                    apagarRapido();
+                    return;
+                }
+                if (!datos.ok || datos.ignorado || !datos.campo) {
+                    // Era charla con el paciente, no un dictado.
+                    registrar('dictado ignorado: "' + texto + '"');
+                    escuchar();
+                    return;
+                }
+
+                agregarATexto(datos.campo, datos.texto);
+                mostrarTestigo(datos.etiqueta + ': ' + datos.texto, 'ev-bueno');
+                escuchar();
+            })
+            .catch(function () {
+                procesando = false;
+                mostrarTestigo('Se cortó la conexión con el servidor.', 'ev-malo');
+                escuchar();
+            });
+    }
+
+    // Suma al final en vez de reemplazar: lo que ya estaba escrito no se toca.
+    function agregarATexto(campo, texto) {
+        const campos = camposDe(campo);
+        if (!campos.length) {
+            return;
+        }
+        const actual = campos[0].value.replace(/\s*$/, '');
+        campos[0].value = actual ? actual + '\n' + texto : texto;
+        campos[0].dispatchEvent(new Event('change', { bubbles: true }));
+        resaltar(campo);
+        registrar('dictado -> ' + campo + ': ' + texto);
+    }
+
+    // ------------------------------------------------------------------
     // Botones
     // ------------------------------------------------------------------
 
@@ -745,6 +876,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     botonIniciar.addEventListener('click', iniciar);
     elementos.otro.addEventListener('click', anotarAparte);
+
+    elementos.rapido.addEventListener('click', function () {
+        if (modoRapido) {
+            apagarRapido();
+        } else {
+            encenderRapido();
+        }
+    });
 
     // Al venir de crear un paciente seguimos con la historia clínica. No se
     // abre sola: Chrome no deja hablar ni grabar sin que el usuario toque

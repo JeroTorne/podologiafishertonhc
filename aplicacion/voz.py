@@ -65,7 +65,22 @@ COMANDOS = {
     # enfermedades, que es una respuesta válida y no un comando.
     'otro': ('no esta en la lista', 'ninguno de esos', 'ninguna de esas',
              'anotar aparte', 'no figura'),
+    # Para volver a abrir la entrevista entera desde el dictado suelto.
+    'empezar': ('empezar entrevista', 'empezar la entrevista',
+                'empezar historia clinica', 'arrancar entrevista',
+                'abrir entrevista', 'empezar de nuevo'),
 }
+
+ETIQUETAS_DICTADO = {
+    'observaciones': 'Observaciones',
+    'antecedentes_familiares': 'Antecedentes familiares',
+    'motivo_consulta': 'Motivo de consulta',
+    'descripcion_seguimiento': 'Seguimiento',
+}
+
+
+def etiqueta_de(campo):
+    return ETIQUETAS_DICTADO.get(campo, campo)
 
 # Cómo puede llegar a decirlo en voz alta, más allá de la etiqueta del modelo.
 # La clave es el slug guardado en la base.
@@ -191,6 +206,71 @@ def quitar_activador(texto):
     if _normalizar(palabras[0]) not in ACTIVADORES:
         return None
     return ' '.join(palabras[1:]).lstrip(' ,.:;')
+
+
+# Cómo se puede nombrar cada campo de texto al dictar suelto, después de
+# terminar la entrevista. El primero de la lista es el destino por defecto.
+DESTINOS_DICTADO = (
+    ('observaciones', ('observaciones', 'observacion', 'la observacion',
+                       'las observaciones')),
+    ('antecedentes_familiares', ('antecedentes familiares', 'antecedentes',
+                                 'los antecedentes')),
+    ('motivo_consulta', ('motivo de consulta', 'motivo de la consulta',
+                         'motivo', 'el motivo')),
+    ('descripcion_seguimiento', ('seguimiento', 'el seguimiento',
+                                 'la evolucion', 'evolucion')),
+)
+
+# Preposiciones y artículos que se cuelan entre la palabra clave y el campo:
+# "anotá EN LAS observaciones que...".
+_RELLENO = ('en', 'a', 'la', 'las', 'el', 'los', 'que', 'de')
+
+
+def interpretar_dictado(texto, campos_posibles):
+    """Reparte un dictado suelto al campo que corresponda.
+
+    "anotá en observaciones que le duele el talón" devuelve
+    ("observaciones", "le duele el talón"). Sin palabra clave devuelve None,
+    porque en este modo el micrófono queda abierto escuchando la consulta
+    entera y solo nos interesa lo que se dicta a propósito. Si no se nombra
+    ningún campo, va al primero de DESTINOS_DICTADO que exista en la página.
+    """
+    resto = quitar_activador(texto)
+    if resto is None:
+        return None
+
+    palabras = resto.split()
+    disponibles = [(campo, alias) for campo, alias in DESTINOS_DICTADO
+                   if campo in campos_posibles]
+    if not disponibles:
+        return None
+
+    # Buscamos el nombre del campo saltando las palabras de relleno.
+    for campo, alias in disponibles:
+        for nombre in sorted(alias, key=len, reverse=True):
+            largo = len(nombre.split())
+            for salto in range(0, 4):
+                if len(palabras) < salto + largo:
+                    continue
+                previas = [_normalizar(p) for p in palabras[:salto]]
+                if any(p not in _RELLENO for p in previas):
+                    continue
+                candidato = ' '.join(_normalizar(p)
+                                     for p in palabras[salto:salto + largo])
+                if candidato == nombre:
+                    dicho = ' '.join(palabras[salto + largo:])
+                    return campo, _sacar_relleno_inicial(dicho)
+
+    # No nombró ningún campo: va al cajón de siempre.
+    return disponibles[0][0], _sacar_relleno_inicial(resto)
+
+
+def _sacar_relleno_inicial(texto):
+    """Saca el "que" de "anotá en observaciones QUE le duele el talón"."""
+    palabras = texto.split()
+    while palabras and _normalizar(palabras[0]) in ('que', 'lo', 'siguiente'):
+        palabras.pop(0)
+    return ' '.join(palabras).lstrip(' ,.:;')
 
 
 def detectar_comando(texto):

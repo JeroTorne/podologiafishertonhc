@@ -19,6 +19,66 @@
     background-color: #0b5ed7;
 }
 
+.ev-lanzador.ev-secundario {
+    margin-left: 0.6rem;
+    background-color: #475569;
+}
+
+.ev-lanzador.ev-secundario:hover {
+    background-color: #334155;
+}
+
+.ev-lanzador.ev-encendido {
+    background-color: #dc3545;
+    animation: ev-palpita-rojo 1.8s ease-in-out infinite;
+}
+
+@keyframes ev-palpita-rojo {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.55); }
+    50% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+}
+
+/* Testigo del dictado rápido: queda flotando con el panel cerrado. */
+
+.ev-testigo {
+    display: none;
+    position: fixed;
+    /* A la izquierda: a la derecha está el botón flotante de WhatsApp. */
+    left: 1.2rem;
+    bottom: 1.2rem;
+    z-index: 1500;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: min(420px, calc(100vw - 2.4rem));
+    padding: 0.7rem 1.1rem;
+    border-radius: 999px;
+    background-color: rgba(15, 23, 42, 0.95);
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.3);
+}
+
+.ev-testigo.visible {
+    display: flex;
+}
+
+.ev-punto {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ef4444;
+    animation: ev-latido 1.4s ease-in-out infinite;
+}
+
+.ev-testigo.ev-bueno .ev-punto {
+    background-color: #22c55e;
+}
+
+.ev-testigo.ev-malo .ev-punto {
+    background-color: #f59e0b;
+}
+
 /* Resalta el botón al venir de crear un paciente, para que no se pase por alto. */
 .ev-lanzador.ev-urgente {
     animation: ev-palpita 1.6s ease-in-out 4;
