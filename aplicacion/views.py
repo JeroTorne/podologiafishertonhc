@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.views.generic.edit import UpdateView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.views.generic import DetailView
 from django.utils import timezone
@@ -42,8 +42,17 @@ def crear_paciente(request):
     if request.method == 'POST':
         form = PacienteForm(request.POST)
         if form.is_valid():
-            form.save()
-            return render(request, 'aplicacion/index.html')
+            paciente = form.save()
+            messages.success(request, 'Paciente creado. Seguimos con la historia clínica.')
+
+            # El alta del paciente y su historia clínica son el mismo momento
+            # de la consulta, así que seguimos de largo. Si los datos se
+            # cargaron por voz, avisamos para ofrecer seguir igual.
+            destino = reverse('crear_historia_clinica',
+                              kwargs={'paciente_id': paciente.id_usuario})
+            if request.POST.get('entrevista_voz'):
+                destino += '?voz=1'
+            return redirect(destino)
     else:
         form = PacienteForm()
     return render(request, 'aplicacion/crear_paciente.html', {'form': form})
@@ -169,7 +178,11 @@ def crear_historia_clinica(request, paciente_id):
     else:
         form = HistoriaClinicaForm(initial={'perfil_paciente': paciente})
     
-    return render(request, 'aplicacion/crear_hc.html', {'form': form, 'paciente': paciente})
+    return render(request, 'aplicacion/crear_hc.html', {
+        'form': form,
+        'paciente': paciente,
+        'autoiniciar_voz': request.GET.get('voz') == '1',
+    })
 
 #-------////----------FIN CREAR HISTORIA CLINICA--------////------------------#
 
@@ -278,8 +291,12 @@ def editar_paciente(request, pk):
 
 @user_passes_test(is_admin)
 def guion_entrevista(request):
-    """Las preguntas que recorre la entrevista por voz, armadas desde el modelo."""
-    return JsonResponse({'pasos': voz.construir_guion()})
+    """Las preguntas que recorre la entrevista por voz, armadas desde el modelo.
+
+    Hay dos guiones: el del paciente nuevo y el de la historia clínica.
+    """
+    cual = request.GET.get('guion', 'historia')
+    return JsonResponse({'pasos': voz.construir(cual)})
 
 
 @user_passes_test(is_admin)
@@ -291,16 +308,25 @@ def interpretar_respuesta(request):
     except json.JSONDecodeError:
         return JsonResponse({'ok': False, 'mensaje': 'Petición inválida.'}, status=400)
 
-    paso = voz.buscar_paso(datos.get('campo', ''))
+    paso = voz.buscar_paso(datos.get('campo', ''), datos.get('guion', 'historia'))
     if paso is None:
         return JsonResponse({'ok': False, 'mensaje': 'Campo desconocido.'}, status=400)
 
     texto = datos.get('texto', '')
 
     # "siguiente", "atrás", "repetir"... no son respuestas, son instrucciones.
+    # Van sin palabra clave: son inconfundibles y apurar la entrevista no
+    # ensucia la historia clínica.
     comando = voz.detectar_comando(texto)
     if comando:
         return JsonResponse({'ok': True, 'comando': comando})
+
+    # Con el activador puesto, lo que no empieza con "anotá" se descarta: es
+    # la charla con el paciente, no una respuesta.
+    if datos.get('activador'):
+        texto = voz.quitar_activador(texto)
+        if texto is None:
+            return JsonResponse({'ok': True, 'comando': None, 'ignorado': True})
 
     resultado = voz.interpretar(paso, texto)
     resultado['ok'] = True

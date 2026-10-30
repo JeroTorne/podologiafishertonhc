@@ -4,6 +4,10 @@
 {% block Body %}
     <header class="mastheadconsultas">
 
+    <div class="container">
+        {% include "aplicacion/_entrevista_voz.html" with guion="paciente" %}
+    </div>
+
     <form id="FormularioConsulta" class="container" action="" method="POST">
 
         {% csrf_token %}

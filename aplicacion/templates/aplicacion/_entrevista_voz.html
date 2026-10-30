@@ -1,0 +1,90 @@
+{% load static %}
+{% comment %}
+Panel de la entrevista por voz. Se incluye tanto en el alta de paciente como
+en la historia clínica; lo único que cambia es el guion de preguntas.
+
+    {% include "aplicacion/_entrevista_voz.html" with guion="paciente" %}
+
+Con autoiniciar=True arranca sola al cargar la página, que es lo que pasa
+cuando se viene de crear un paciente y sigue la historia clínica.
+{% endcomment %}
+
+<link rel="stylesheet" href="{% static 'aplicacion/css/entrevista_voz.css' %}">
+
+{% if autoiniciar %}
+<div class="ev-continuar">
+    <strong>Paciente creado.</strong> Seguí con la historia clínica tocando
+    el botón de acá abajo.
+</div>
+{% endif %}
+
+<button type="button" class="ev-lanzador" id="iniciar-entrevista">
+    <i class="fas fa-microphone"></i> Completar por voz
+</button>
+
+<div class="ev-aviso" id="ev-aviso">
+    <strong>Revisá antes de guardar.</strong> Los campos que completó la
+    entrevista quedaron marcados en amarillo. Corregí lo que haga falta y
+    recién ahí apretá Guardar.
+</div>
+
+<div class="ev-panel" id="entrevista-voz"
+     data-guion="{{ guion|default:'historia' }}"
+     data-autoiniciar="{% if autoiniciar %}1{% endif %}"
+     data-guion-url="{% url 'guion_entrevista' %}"
+     data-interpretar-url="{% url 'interpretar_respuesta' %}">
+    <div class="ev-caja">
+
+        <div class="ev-progreso" id="ev-progreso"></div>
+        <div class="ev-barra-fondo"><div class="ev-barra" id="ev-barra"></div></div>
+
+        <h2 class="ev-pregunta" id="ev-pregunta"></h2>
+
+        <div class="ev-estado" id="ev-estado"></div>
+        <div class="ev-escuchado" id="ev-escuchado"></div>
+        <div class="ev-resultado" id="ev-resultado"></div>
+        <div class="ev-candidatos" id="ev-candidatos"></div>
+
+        <!-- Las opciones del campo: sirven de machete y se pueden tocar -->
+        <div class="ev-lista" id="ev-lista"></div>
+        <button type="button" class="ev-otro" id="ev-otro">
+            No está en la lista, anotarlo en Observaciones
+        </button>
+
+        <!-- En los campos de texto libre, lo dictado se puede corregir acá -->
+        <textarea class="ev-texto" id="ev-texto" rows="4"
+                  placeholder="Acá va apareciendo lo que dictes. Podés corregirlo a mano."></textarea>
+        <button type="button" class="ev-otro" id="ev-borrar">
+            Borrar y dictar de nuevo
+        </button>
+
+        <div class="ev-controles">
+            <button type="button" id="ev-repetir">Repetir pregunta</button>
+            <button type="button" id="ev-atras">Anterior</button>
+            <button type="button" id="ev-saltear">Saltear</button>
+            <button type="button" id="ev-terminar" class="ev-cerrar">Terminar</button>
+        </div>
+
+        <div class="ev-opciones">
+            <label>
+                <input type="checkbox" id="ev-activador" checked>
+                Anotar solo cuando digo <strong>&laquo;anotá&raquo;</strong>
+            </label>
+            <label style="margin-left: 1.2rem;">
+                <input type="checkbox" id="ev-voz-alta" checked>
+                Leer las preguntas en voz alta
+            </label>
+            <label style="margin-left: 1.2rem;">
+                <input type="checkbox" id="ev-diagnostico">
+                Ver diagnóstico
+            </label>
+        </div>
+
+        <p class="ev-ayuda" id="ev-ayuda"></p>
+
+        <div class="ev-log" id="ev-log"></div>
+
+    </div>
+</div>
+
+<script src="{% static 'aplicacion/js/entrevista_voz.js' %}"></script>

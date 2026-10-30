@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', function () {
         candidatos: document.getElementById('ev-candidatos'),
         lista: document.getElementById('ev-lista'),
         otro: document.getElementById('ev-otro'),
+        activador: document.getElementById('ev-activador'),
+        ayuda: document.getElementById('ev-ayuda'),
         texto: document.getElementById('ev-texto'),
         borrar: document.getElementById('ev-borrar'),
         vozAlta: document.getElementById('ev-voz-alta'),
@@ -157,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             reconocimiento.start();
             escuchando = true;
-            marcarEstado('escuchando', 'Escuchando...');
+            esperarActivador();
         } catch (error) {
             // start() tira excepción si ya venía corriendo; lo reintentamos solos.
             escuchando = false;
@@ -175,6 +177,41 @@ document.addEventListener('DOMContentLoaded', function () {
     function marcarEstado(clase, texto) {
         elementos.estado.className = 'ev-estado ev-' + clase;
         elementos.estado.textContent = texto;
+    }
+
+    function esperarActivador() {
+        marcarEstado('escuchando', elementos.activador.checked
+            ? 'Escuchando. Decí «anotá» y la respuesta.'
+            : 'Escuchando...');
+    }
+
+    function actualizarAyuda() {
+        const comandos = 'Podés decir: "siguiente", "anterior", "repetir", '
+            + '"saltear" o "terminar".';
+        elementos.ayuda.textContent = elementos.activador.checked
+            ? 'Para cargar un dato empezá con «anotá»: por ejemplo, "anotá, tipo dos". '
+                + 'Lo que no arranque así no se guarda. ' + comandos
+            : 'Se guarda todo lo que escuche. ' + comandos;
+    }
+
+    // Las preferencias quedan guardadas en el navegador. Puede fallar en modo
+    // incógnito o con las cookies bloqueadas, y no pasa nada: se usa el valor
+    // por defecto.
+    function recordar(clave, valor) {
+        try {
+            localStorage.setItem(clave, valor ? '1' : '0');
+        } catch (error) {
+            /* sin almacenamiento disponible */
+        }
+    }
+
+    function recordado(clave, porDefecto) {
+        try {
+            const valor = localStorage.getItem(clave);
+            return valor === null ? porDefecto : valor === '1';
+        } catch (error) {
+            return porDefecto;
+        }
     }
 
     // ------------------------------------------------------------------
@@ -262,7 +299,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             },
-            body: JSON.stringify({ campo: paso.campo, texto: texto }),
+            body: JSON.stringify({
+                campo: paso.campo,
+                texto: texto,
+                guion: panel.dataset.guion || 'historia',
+                activador: elementos.activador.checked,
+            }),
         })
             .then(function (respuesta) { return respuesta.json(); })
             .then(function (datos) {
@@ -273,6 +315,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 if (datos.comando) {
                     ejecutarComando(datos.comando);
+                    return;
+                }
+                if (datos.ignorado) {
+                    // Se dijo algo que no empezaba con la palabra clave: es
+                    // charla con el paciente, no una respuesta.
+                    registrar('ignorado (sin palabra clave): "' + texto + '"');
+                    elementos.escuchado.textContent = '';
+                    esperarActivador();
+                    escuchar();
                     return;
                 }
                 aplicarResultado(paso, datos, texto);
@@ -324,6 +375,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         aplicarValores(paso, datos.valores);
         marcarSeleccion(paso);
+        if (!conOpciones(paso)) {
+            // Que vea lo que quedó guardado, no lo que dijo: en una fecha o un
+            // DNI no son lo mismo, y es lo que va a querer corregir.
+            elementos.texto.value = valorActual(paso.campo) || '';
+        }
         const leido = datos.textos.length ? datos.textos.join(', ') : 'Ninguna';
 
         if (datos.confianza === 'media') {
@@ -348,16 +404,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Hace de machete (no hay por qué saberse de memoria los 17 remedios para
     // la presión) y además es el plan B: se puede tocar en vez de dictar.
-    function pintarLista(paso) {
-        const esTexto = paso.tipo === 'texto';
-        elementos.lista.innerHTML = '';
-        elementos.otro.style.display = esTexto ? 'none' : 'inline-block';
-        elementos.texto.style.display = esTexto ? 'block' : 'none';
-        elementos.borrar.style.display = esTexto ? 'inline-block' : 'none';
+    function conOpciones(paso) {
+        return paso.tipo === 'opcion' || paso.tipo === 'opciones';
+    }
 
-        if (esTexto) {
-            // Lo dictado se ve y se puede arreglar a mano sin salir del panel.
-            elementos.texto.value = textoAcumulado;
+    function pintarLista(paso) {
+        const libre = !conOpciones(paso);
+        elementos.lista.innerHTML = '';
+        elementos.otro.style.display = libre ? 'none' : 'inline-block';
+        elementos.texto.style.display = libre ? 'block' : 'none';
+        elementos.borrar.style.display = libre ? 'inline-block' : 'none';
+        elementos.texto.rows = paso.tipo === 'texto' ? 4 : 2;
+
+        if (libre) {
+            // Nombres, DNI, fechas y textos: lo que quedó se ve y se puede
+            // arreglar a mano sin salir del panel.
+            elementos.texto.value = paso.tipo === 'texto'
+                ? textoAcumulado
+                : (valorActual(paso.campo) || '');
             return;
         }
 
@@ -380,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Deja marcadas las opciones que quedaron puestas en el formulario, sin
     // importar si las eligió la voz o el dedo.
     function marcarSeleccion(paso) {
-        if (paso.tipo === 'texto') {
+        if (!conOpciones(paso)) {
             return;
         }
         const campos = camposDe(paso.campo);
@@ -611,7 +675,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function cargarGuion() {
-        return fetch(panel.dataset.guionUrl)
+        const cual = panel.dataset.guion || 'historia';
+        return fetch(panel.dataset.guionUrl + '?guion=' + encodeURIComponent(cual))
             .then(function (respuesta) { return respuesta.json(); })
             .then(function (datos) {
                 pasos = datos.pasos;
@@ -629,8 +694,23 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    // Le avisa al servidor que estos datos se cargaron hablando, para que al
+    // guardar un paciente nuevo ofrezca seguir con la historia clínica.
+    function marcarFormularioPorVoz() {
+        const formulario = document.getElementById('FormularioConsulta');
+        if (!formulario || formulario.querySelector('[name="entrevista_voz"]')) {
+            return;
+        }
+        const campo = document.createElement('input');
+        campo.type = 'hidden';
+        campo.name = 'entrevista_voz';
+        campo.value = '1';
+        formulario.appendChild(campo);
+    }
+
     function terminar() {
         activa = false;
+        marcarFormularioPorVoz();
         cancelarAvance();
         dejarDeEscuchar();
         if (window.speechSynthesis) {
@@ -650,8 +730,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // Botones
     // ------------------------------------------------------------------
 
+    elementos.activador.checked = recordado('ev-activador', true);
+    elementos.vozAlta.checked = recordado('ev-voz-alta', true);
+    actualizarAyuda();
+
+    elementos.activador.addEventListener('change', function () {
+        recordar('ev-activador', elementos.activador.checked);
+        actualizarAyuda();
+    });
+
+    elementos.vozAlta.addEventListener('change', function () {
+        recordar('ev-voz-alta', elementos.vozAlta.checked);
+    });
+
     botonIniciar.addEventListener('click', iniciar);
     elementos.otro.addEventListener('click', anotarAparte);
+
+    // Al venir de crear un paciente seguimos con la historia clínica. No se
+    // abre sola: Chrome no deja hablar ni grabar sin que el usuario toque
+    // algo primero, así que la dejamos a la vista y lista para un toque.
+    if (panel.dataset.autoiniciar) {
+        botonIniciar.classList.add('ev-urgente');
+        botonIniciar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
     // Mientras corrige con el teclado el micrófono queda en pausa: si no,
     // seguiría sumando texto por detrás de lo que está escribiendo.
@@ -663,8 +764,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     elementos.texto.addEventListener('input', function () {
-        textoAcumulado = elementos.texto.value;
-        aplicarValores(pasos[indice], [textoAcumulado]);
+        const paso = pasos[indice];
+        if (paso.tipo === 'texto') {
+            textoAcumulado = elementos.texto.value;
+        }
+        aplicarValores(paso, [elementos.texto.value]);
     });
 
     elementos.texto.addEventListener('blur', function () {

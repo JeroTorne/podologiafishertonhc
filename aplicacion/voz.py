@@ -16,10 +16,12 @@ se entienden, está el hook de n8n al final del archivo.
 import difflib
 import re
 import unicodedata
+from datetime import date
 
 from django.conf import settings
 
 from .models import (
+    ActividadFisica,
     Alergia,
     AnticoagulanteMedicamentos,
     ColesterolMedicamentos,
@@ -37,6 +39,7 @@ from .models import (
     TipoPie,
     Colesterol,
     Anticoagulante,
+    plantillas,
 )
 
 # Palabras que significan "no tiene nada de esto".
@@ -166,6 +169,30 @@ def _opcion_negativa(paso):
     return None
 
 
+# Con el micrófono siempre abierto, lo que se charla con el paciente se puede
+# colar como respuesta. Con el activador puesto, solo cuenta lo que arranca
+# con una de estas palabras: así cada dato cargado es deliberado.
+ACTIVADORES = (
+    'anota', 'anotar', 'anotale', 'anotalo', 'anotame',
+    'pone', 'poner', 'ponele', 'escribi', 'cargale', 'marca', 'marcar',
+)
+
+
+def quitar_activador(texto):
+    """Devuelve lo que viene después de la palabra clave.
+
+    None si no la dijo, que es la señal para ignorar la frase entera. Se corta
+    sobre el texto original, no sobre el normalizado, para no perderle los
+    acentos ni las mayúsculas a los nombres propios.
+    """
+    palabras = (texto or '').strip().split()
+    if not palabras:
+        return None
+    if _normalizar(palabras[0]) not in ACTIVADORES:
+        return None
+    return ' '.join(palabras[1:]).lstrip(' ,.:;')
+
+
 def detectar_comando(texto):
     """Devuelve el comando de navegación dicho, o None si es una respuesta común."""
     t = _normalizar(texto)
@@ -174,6 +201,144 @@ def detectar_comando(texto):
             if t == frase or t == frase + ' por favor':
                 return comando
     return None
+
+
+# ---------------------------------------------------------------------------
+# Números y fechas dichos en voz alta
+# ---------------------------------------------------------------------------
+
+PALABRAS_NUMERO = {
+    # "primero" es el único ordinal que se usa para los días: "el primero de
+    # enero", pero "el dos de enero".
+    'cero': 0, 'un': 1, 'uno': 1, 'una': 1, 'primero': 1,
+    'dos': 2, 'tres': 3, 'cuatro': 4,
+    'cinco': 5, 'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
+    'once': 11, 'doce': 12, 'trece': 13, 'catorce': 14, 'quince': 15,
+    'dieciseis': 16, 'diecisiete': 17, 'dieciocho': 18, 'diecinueve': 19,
+    'veinte': 20, 'veintiuno': 21, 'veintiun': 21, 'veintidos': 22,
+    'veintitres': 23, 'veinticuatro': 24, 'veinticinco': 25, 'veintiseis': 26,
+    'veintisiete': 27, 'veintiocho': 28, 'veintinueve': 29,
+    'treinta': 30, 'cuarenta': 40, 'cincuenta': 50, 'sesenta': 60,
+    'setenta': 70, 'ochenta': 80, 'noventa': 90,
+    'cien': 100, 'ciento': 100, 'doscientos': 200, 'trescientos': 300,
+    'cuatrocientos': 400, 'quinientos': 500, 'seiscientos': 600,
+    'setecientos': 700, 'ochocientos': 800, 'novecientos': 900,
+}
+
+MESES = {
+    'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5, 'junio': 6,
+    'julio': 7, 'agosto': 8, 'septiembre': 9, 'setiembre': 9, 'octubre': 10,
+    'noviembre': 11, 'diciembre': 12,
+}
+
+
+def _numero_en_palabras(texto):
+    """Convierte "treinta y ocho" en 38, o devuelve None si no hay número."""
+    total = 0
+    parcial = 0
+    hubo = False
+    for palabra in texto.split():
+        if palabra == 'y':
+            continue
+        if palabra == 'mil':
+            total += (parcial or 1) * 1000
+            parcial = 0
+            hubo = True
+        elif palabra in PALABRAS_NUMERO:
+            parcial += PALABRAS_NUMERO[palabra]
+            hubo = True
+    return total + parcial if hubo else None
+
+
+def _numero_de(texto):
+    """Saca un número de lo dicho, venga en cifras o en palabras."""
+    cifras = re.findall(r'\d+', texto)
+    if cifras:
+        return int(''.join(cifras))
+    return _numero_en_palabras(texto)
+
+
+def _interpretar_numero(paso, texto):
+    t = _normalizar(texto)
+
+    # "un metro sesenta" o "uno sesenta" son 160 cm, no 1 ni 160 sueltos.
+    if paso.get('es_altura'):
+        metros = re.search(r'\b(un|uno|1)\s+(metro|metros)?\s*(.*)$', t)
+        if metros:
+            resto = _numero_de(metros.group(3) or '')
+            if resto is not None and resto < 100:
+                return _resultado_numero(paso, 100 + resto)
+
+    numero = _numero_de(t)
+    if numero is None:
+        return {'valores': [], 'textos': [], 'confianza': 'nula', 'candidatos': []}
+    return _resultado_numero(paso, numero)
+
+
+def _resultado_numero(paso, numero):
+    # Fuera de rango no lo descartamos, pero pedimos que lo confirme: puede ser
+    # un error de transcripción tanto como un dato raro pero real.
+    minimo, maximo = paso.get('rango', (None, None))
+    razonable = ((minimo is None or numero >= minimo)
+                 and (maximo is None or numero <= maximo))
+    return {
+        'valores': [str(numero)],
+        'textos': [str(numero)],
+        'confianza': 'alta' if razonable else 'media',
+        'candidatos': [],
+    }
+
+
+def _interpretar_fecha(paso, texto):
+    """Entiende "2 de mayo de 1960", "dos de mayo del sesenta" y "2/5/1960"."""
+    t = _normalizar(texto)
+    dia = mes = anio = None
+
+    for nombre, numero in MESES.items():
+        if re.search(r'\b' + nombre + r'\b', t):
+            antes, _, despues = t.partition(nombre)
+            mes = numero
+            dia = _numero_de(antes)
+            anio = _numero_de(despues)
+            break
+
+    if mes is None:
+        # Sin nombre de mes, esperamos tres números: día, mes y año.
+        sueltos = [int(n) for n in re.findall(r'\d+', t)]
+        if len(sueltos) == 3:
+            dia, mes, anio = sueltos
+
+    if not (dia and mes and anio):
+        return {'valores': [], 'textos': [], 'confianza': 'nula', 'candidatos': []}
+
+    # "del sesenta" es 1960; nadie que venga a la consulta nació en el año 60.
+    if anio < 100:
+        anio += 2000 if anio <= 25 else 1900
+
+    try:
+        fecha = date(anio, mes, dia)
+    except ValueError:
+        return {'valores': [], 'textos': [], 'confianza': 'nula', 'candidatos': []}
+
+    hoy = date.today()
+    sensata = date(hoy.year - 120, 1, 1) <= fecha <= hoy
+    return {
+        'valores': [fecha.isoformat()],
+        'textos': [fecha.strftime('%d/%m/%Y')],
+        'confianza': 'alta' if sensata else 'media',
+        'candidatos': [],
+    }
+
+
+def _interpretar_frase(texto):
+    """Textos cortos de una sola tirada: nombres, domicilios, localidades."""
+    limpio = re.sub(r'\s+', ' ', (texto or '').strip().rstrip('.,'))
+    if not limpio:
+        return {'valores': [], 'textos': [], 'confianza': 'nula', 'candidatos': []}
+    # El dictado suele venir todo en minúscula y son nombres propios.
+    bonito = ' '.join(p[:1].upper() + p[1:] for p in limpio.split())
+    return {'valores': [bonito], 'textos': [bonito], 'confianza': 'alta',
+            'candidatos': []}
 
 
 def interpretar(paso, texto):
@@ -191,6 +356,15 @@ def interpretar(paso, texto):
             'confianza': 'alta' if limpio else 'nula',
             'candidatos': [],
         }
+
+    if paso['tipo'] == 'frase':
+        return _interpretar_frase(texto)
+
+    if paso['tipo'] == 'numero':
+        return _interpretar_numero(paso, texto)
+
+    if paso['tipo'] == 'fecha':
+        return _interpretar_fecha(paso, texto)
 
     t = _normalizar(texto)
     if not t:
@@ -303,6 +477,20 @@ def _paso_texto(campo, etiqueta, pregunta):
     }
 
 
+def _paso_simple(campo, etiqueta, pregunta, tipo, **extra):
+    """Campos de una sola respuesta corta: frases, números y fechas."""
+    paso = {
+        'campo': campo,
+        'etiqueta': etiqueta,
+        'pregunta': pregunta,
+        'tipo': tipo,
+        'opciones': [],
+        'omitir_si': None,
+    }
+    paso.update(extra)
+    return paso
+
+
 def construir_guion():
     """El orden en que se hacen las preguntas durante la consulta.
 
@@ -396,8 +584,48 @@ def construir_guion():
     ]
 
 
-def buscar_paso(campo):
-    for paso in construir_guion():
+def construir_guion_paciente():
+    """Los datos del paciente, en el orden en que se piden en la recepción."""
+    return [
+        _paso_simple('nombre', 'Nombre', '¿Cuál es el nombre?', 'frase'),
+        _paso_simple('apellido', 'Apellido', '¿Y el apellido?', 'frase'),
+        _paso_simple('dni', 'DNI', '¿Me decís el DNI?', 'numero',
+                     rango=(1000000, 99999999)),
+        _paso_simple('fecha_nacimiento', 'Fecha de nacimiento',
+                     '¿Fecha de nacimiento? Por ejemplo, 2 de mayo de 1960.',
+                     'fecha'),
+        _paso_simple('telefono', 'Teléfono', '¿Un teléfono de contacto?',
+                     'numero', rango=(10000000, 99999999999)),
+        _paso_simple('domicilio', 'Domicilio', '¿Domicilio?', 'frase'),
+        _paso_simple('localidad', 'Localidad', '¿De qué localidad?', 'frase'),
+        _paso_simple('numero_calzado', 'Número de calzado',
+                     '¿Qué número de calzado usa?', 'numero', rango=(15, 55)),
+        _paso_simple('altura', 'Altura', '¿Cuánto mide, en centímetros?',
+                     'numero', rango=(50, 230), es_altura=True),
+        _paso_simple('peso', 'Peso', '¿Y cuánto pesa, en kilos?', 'numero',
+                     rango=(2, 300)),
+        _paso_texto('motivo_consulta', 'Motivo de consulta',
+                    '¿Por qué viene a la consulta?'),
+        _paso_opcion('actividad_fisica', 'Actividad física',
+                     '¿Hace alguna actividad física?',
+                     ActividadFisica.TIPO_ACTIVIDAD_CHOICES),
+        _paso_opcion('plantillas', 'Plantillas', '¿Usa plantillas?',
+                     plantillas.TIPO_PLANTILLAS_CHOICES),
+    ]
+
+
+GUIONES = {
+    'historia': construir_guion,
+    'paciente': construir_guion_paciente,
+}
+
+
+def construir(nombre):
+    return GUIONES.get(nombre, construir_guion)()
+
+
+def buscar_paso(campo, guion='historia'):
+    for paso in construir(guion):
         if paso['campo'] == campo:
             return paso
     return None
