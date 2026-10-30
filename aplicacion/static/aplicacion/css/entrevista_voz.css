@@ -223,6 +223,29 @@ body.entrevista-abierta {
     color: #64748b;
 }
 
+/* Registro de eventos del micrófono, para cuando algo no anda. */
+
+.ev-log {
+    display: none;
+    max-height: 190px;
+    margin-top: 1.2rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 8px;
+    background-color: rgba(2, 6, 23, 0.6);
+    color: #94a3b8;
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    text-align: left;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.ev-log.visible {
+    display: block;
+}
+
 /* Los campos que completó la voz, para revisarlos antes de guardar. */
 
 .pie-type.completado-por-voz {

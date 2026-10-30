@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+settings_local.py
+db_local.sqlite3

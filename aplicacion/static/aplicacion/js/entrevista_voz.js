@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', function () {
         resultado: document.getElementById('ev-resultado'),
         candidatos: document.getElementById('ev-candidatos'),
         vozAlta: document.getElementById('ev-voz-alta'),
+        diagnostico: document.getElementById('ev-diagnostico'),
+        log: document.getElementById('ev-log'),
     };
 
     let pasos = [];
@@ -38,6 +40,29 @@ document.addEventListener('DOMContentLoaded', function () {
     let procesando = false;
     let temporizador = null;
     let textoAcumulado = '';
+
+    // ------------------------------------------------------------------
+    // Diagnóstico
+    // ------------------------------------------------------------------
+
+    // Deja constancia de cada evento del micrófono. Sirve para saber en qué
+    // eslabón se corta cuando la entrevista dice "Escuchando" y no reacciona:
+    // sin "audiostart" el micrófono no llegó a abrirse (permiso pendiente),
+    // con "audiostart" pero sin "soundstart" no entra sonido (micrófono mudo o
+    // equivocado), y con "speechstart" pero sin "result" el problema está en
+    // la conexión con el servicio de reconocimiento de Google.
+    function registrar(texto) {
+        // También a la consola, así se puede ver con F12 sin abrir el panel.
+        console.log('[entrevista] ' + texto);
+        if (!elementos.log) {
+            return;
+        }
+        const hora = new Date().toLocaleTimeString('es-AR', { hour12: false });
+        const linea = document.createElement('div');
+        linea.textContent = hora + '  ' + texto;
+        elementos.log.appendChild(linea);
+        elementos.log.scrollTop = elementos.log.scrollHeight;
+    }
 
     // ------------------------------------------------------------------
     // Utilidades del formulario
@@ -130,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             // start() tira excepción si ya venía corriendo; lo reintentamos solos.
             escuchando = false;
+            registrar('start() rechazado: ' + (error.message || error.name));
         }
     }
 
@@ -325,11 +351,18 @@ document.addEventListener('DOMContentLoaded', function () {
         reconocimiento.interimResults = true;
         reconocimiento.maxAlternatives = 1;
 
+        // Estos cuatro no hacen nada salvo dejar rastro de hasta dónde llegó.
+        reconocimiento.onstart = function () { registrar('start (reconocimiento iniciado)'); };
+        reconocimiento.onaudiostart = function () { registrar('audiostart (micrófono abierto)'); };
+        reconocimiento.onsoundstart = function () { registrar('soundstart (entra sonido)'); };
+        reconocimiento.onspeechstart = function () { registrar('speechstart (se detecta voz)'); };
+
         reconocimiento.onresult = function (evento) {
             let parcial = '';
             for (let i = evento.resultIndex; i < evento.results.length; i += 1) {
                 const alternativa = evento.results[i][0].transcript;
                 if (evento.results[i].isFinal) {
+                    registrar('result final: "' + alternativa.trim() + '"');
                     procesar(alternativa.trim());
                 } else {
                     parcial += alternativa;
@@ -340,25 +373,54 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
 
+        // Ningún error puede quedar mudo: si no mostramos nada, el panel se
+        // queda en "Escuchando..." y parece colgado aunque el micrófono esté
+        // bien. Los que no cortan la entrevista dejan que onend reintente.
+        const MENSAJES_ERROR = {
+            'not-allowed': ['Hay que permitir el micrófono en el navegador.', true],
+            'service-not-allowed': ['El navegador bloqueó el servicio de voz.', true],
+            'audio-capture': ['No se pudo abrir el micrófono. ¿Lo está usando otro programa?', true],
+            'network': ['Sin conexión con el servicio de voz de Google. Reintentando...', false],
+            'no-speech': ['No se escuchó nada. Probá de nuevo.', false],
+            'bad-grammar': ['El navegador rechazó la configuración de voz.', true],
+            'language-not-supported': ['El navegador no tiene el español disponible.', true],
+        };
+
         reconocimiento.onerror = function (evento) {
             escuchando = false;
-            if (evento.error === 'not-allowed' || evento.error === 'service-not-allowed') {
-                marcarEstado('error', 'Hay que permitir el micrófono en el navegador.');
+            registrar('error: ' + evento.error);
+
+            // Lo disparamos nosotros al cambiar de pregunta, no es una falla.
+            if (evento.error === 'aborted') {
+                return;
+            }
+
+            const conocido = MENSAJES_ERROR[evento.error];
+            const texto = conocido ? conocido[0] : ('Error del micrófono: ' + evento.error);
+            const corta = conocido ? conocido[1] : true;
+
+            marcarEstado(corta ? 'error' : 'duda', texto);
+            if (corta) {
                 activa = false;
-            } else if (evento.error === 'no-speech') {
-                marcarEstado('duda', 'No se escuchó nada. Probá de nuevo.');
             }
         };
 
         reconocimiento.onend = function () {
             escuchando = false;
+            registrar('end (reconocimiento terminado)');
             // Chrome corta solo cada tanto: si la entrevista sigue abierta, no
             // estamos esperando el avance automático y no hay nada en curso,
-            // volvemos a escuchar.
-            if (activa && !temporizador && !procesando) {
+            // volvemos a escuchar. Mientras se lee la pregunta no, porque si no
+            // el micrófono se escucha a sí mismo.
+            if (activa && !temporizador && !procesando && !hablando()) {
                 setTimeout(escuchar, 250);
             }
         };
+    }
+
+    function hablando() {
+        return !!(window.speechSynthesis
+            && (window.speechSynthesis.speaking || window.speechSynthesis.pending));
     }
 
     function iniciar() {
@@ -368,7 +430,42 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch(panel.dataset.guionUrl)
+        // Pedimos el micrófono de forma explícita antes de arrancar. Si no lo
+        // hacemos y el cartel de permiso de Chrome se cierra sin contestar, el
+        // reconocimiento arranca igual, no da ningún error y la entrevista se
+        // queda diciendo "Escuchando..." para siempre.
+        permitirMicrofono().then(cargarGuion).catch(function (motivo) {
+            alert('No se pudo usar el micrófono: ' + motivo + '.\n\n'
+                + 'Tocá el ícono de la cámara o el candado en la barra de '
+                + 'direcciones, poné el micrófono en "Permitir" y recargá la página.');
+        });
+    }
+
+    function permitirMicrofono() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return Promise.resolve();
+        }
+        return navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function (flujo) {
+                // El audio en sí no nos sirve: el reconocimiento abre el suyo.
+                // Lo pedimos solo para que el permiso quede resuelto.
+                flujo.getTracks().forEach(function (pista) { pista.stop(); });
+                registrar('permiso de micrófono concedido');
+            })
+            .catch(function (error) {
+                registrar('permiso de micrófono rechazado: ' + error.name);
+                if (error.name === 'NotAllowedError') {
+                    throw 'el permiso está denegado o quedó sin contestar';
+                }
+                if (error.name === 'NotFoundError') {
+                    throw 'no hay ningún micrófono conectado';
+                }
+                throw error.message || error.name;
+            });
+    }
+
+    function cargarGuion() {
+        return fetch(panel.dataset.guionUrl)
             .then(function (respuesta) { return respuesta.json(); })
             .then(function (datos) {
                 pasos = datos.pasos;
@@ -408,6 +505,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // ------------------------------------------------------------------
 
     botonIniciar.addEventListener('click', iniciar);
+
+    if (elementos.diagnostico) {
+        elementos.diagnostico.addEventListener('change', function () {
+            elementos.log.classList.toggle('visible', elementos.diagnostico.checked);
+        });
+    }
     document.getElementById('ev-repetir').addEventListener('click', mostrarPaso);
     document.getElementById('ev-atras').addEventListener('click', retroceder);
     document.getElementById('ev-saltear').addEventListener('click', avanzar);
