@@ -47,4 +47,12 @@ urlpatterns = [
     path('eliminar-seguimiento/<int:seguimiento_id>/', eliminar_seguimiento, name='eliminar_seguimiento'),
     
     #-------////----------FIN SEGUIMIENTOS--------////------------------#
+
+    #-------////----------ENTREVISTA POR VOZ--------////------------------#
+
+    path('entrevista/guion/', guion_entrevista, name='guion_entrevista'),
+
+    path('entrevista/interpretar/', interpretar_respuesta, name='interpretar_respuesta'),
+
+    #-------////----------FIN ENTREVISTA POR VOZ--------////------------------#
 ]

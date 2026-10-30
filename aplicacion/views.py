@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
 from datetime import datetime
+from . import voz
 
 #-------////----------INDEX--------////------------------#
 
@@ -272,3 +273,38 @@ def editar_paciente(request, pk):
     return render(request, 'aplicacion/editar_paciente.html', {'form': form, 'paciente': paciente})
 
 #-------////----------FIN EDITAR PACIENTE--------////------------------#
+
+#-------////----------ENTREVISTA POR VOZ--------////------------------#
+
+@user_passes_test(is_admin)
+def guion_entrevista(request):
+    """Las preguntas que recorre la entrevista por voz, armadas desde el modelo."""
+    return JsonResponse({'pasos': voz.construir_guion()})
+
+
+@user_passes_test(is_admin)
+@require_POST
+def interpretar_respuesta(request):
+    """Traduce lo que se dictó en un campo a los valores que espera el formulario."""
+    try:
+        datos = json.loads(request.body or b'{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': False, 'mensaje': 'Petición inválida.'}, status=400)
+
+    paso = voz.buscar_paso(datos.get('campo', ''))
+    if paso is None:
+        return JsonResponse({'ok': False, 'mensaje': 'Campo desconocido.'}, status=400)
+
+    texto = datos.get('texto', '')
+
+    # "siguiente", "atrás", "repetir"... no son respuestas, son instrucciones.
+    comando = voz.detectar_comando(texto)
+    if comando:
+        return JsonResponse({'ok': True, 'comando': comando})
+
+    resultado = voz.interpretar(paso, texto)
+    resultado['ok'] = True
+    resultado['comando'] = None
+    return JsonResponse(resultado)
+
+#-------////----------FIN ENTREVISTA POR VOZ--------////------------------#

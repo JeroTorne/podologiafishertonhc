@@ -2,8 +2,20 @@
 {% load static %}
 
 {% block Body %}
+<link rel="stylesheet" href="{% static 'aplicacion/css/entrevista_voz.css' %}">
 <header class="mastheadconsultas">
     <div class="container">
+
+        <button type="button" class="ev-lanzador" id="iniciar-entrevista">
+            <i class="fas fa-microphone"></i> Completar por voz
+        </button>
+
+        <div class="ev-aviso" id="ev-aviso">
+            <strong>Revisá antes de guardar.</strong> Los campos que completó la
+            entrevista quedaron marcados en amarillo. Corregí lo que haga falta y
+            recién ahí apretá Guardar.
+        </div>
+
         <form method="POST" enctype="multipart/form-data" id="FormularioConsulta">
             {% csrf_token %}
                         
@@ -199,5 +211,44 @@
     </div>
 </header>
 
+<!-- Panel de la entrevista por voz -->
+<div class="ev-panel" id="entrevista-voz"
+     data-guion-url="{% url 'guion_entrevista' %}"
+     data-interpretar-url="{% url 'interpretar_respuesta' %}">
+    <div class="ev-caja">
+
+        <div class="ev-progreso" id="ev-progreso"></div>
+        <div class="ev-barra-fondo"><div class="ev-barra" id="ev-barra"></div></div>
+
+        <h2 class="ev-pregunta" id="ev-pregunta"></h2>
+
+        <div class="ev-estado" id="ev-estado"></div>
+        <div class="ev-escuchado" id="ev-escuchado"></div>
+        <div class="ev-resultado" id="ev-resultado"></div>
+        <div class="ev-candidatos" id="ev-candidatos"></div>
+
+        <div class="ev-controles">
+            <button type="button" id="ev-repetir">Repetir pregunta</button>
+            <button type="button" id="ev-atras">Anterior</button>
+            <button type="button" id="ev-saltear">Saltear</button>
+            <button type="button" id="ev-terminar" class="ev-cerrar">Terminar</button>
+        </div>
+
+        <div class="ev-opciones">
+            <label>
+                <input type="checkbox" id="ev-voz-alta" checked>
+                Leer las preguntas en voz alta
+            </label>
+        </div>
+
+        <p class="ev-ayuda">
+            Sin tocar nada podés decir: "siguiente", "anterior", "repetir",
+            "saltear" o "terminar".
+        </p>
+
+    </div>
+</div>
+
+<script src="{% static 'aplicacion/js/entrevista_voz.js' %}"></script>
 
 {% endblock Body %}
