@@ -18,13 +18,15 @@ cuando se viene de crear un paciente y sigue la historia clínica.
 </div>
 {% endif %}
 
-<button type="button" class="ev-lanzador" id="iniciar-entrevista">
-    <i class="fas fa-microphone"></i> Completar por voz
-</button>
+<div class="ev-acciones">
+    <button type="button" class="ev-lanzador" id="iniciar-entrevista">
+        <i class="fas fa-microphone"></i> Completar por voz
+    </button>
 
-<button type="button" class="ev-lanzador ev-secundario" id="ev-rapido">
-    <i class="fas fa-pen"></i> Dictado rápido
-</button>
+    <button type="button" class="ev-lanzador ev-secundario" id="ev-rapido">
+        <i class="fas fa-pen"></i> Dictado rápido
+    </button>
+</div>
 
 <!-- Testigo del dictado rápido: queda flotando con la entrevista cerrada -->
 <div class="ev-testigo" id="ev-testigo">

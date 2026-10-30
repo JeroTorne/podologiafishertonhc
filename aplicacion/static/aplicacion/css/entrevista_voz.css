@@ -1,10 +1,38 @@
 /* Entrevista por voz de la historia clínica. */
 
+/* El navbar es fijo y la masthead no tiene padding arriba: sin este margen
+   los botones quedan pegados al encabezado. */
+/* Mismo ancho y centrado que #FormularioConsulta, para que los botones
+   queden alineados con la tarjeta y no pegados al borde de la pantalla. */
+.ev-acciones,
+.ev-aviso,
+.ev-continuar {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.ev-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: clamp(1.75rem, 5vh, 3.25rem);
+    margin-bottom: 1.5rem;
+}
+
+/* Si viene el cartel de "paciente creado", el aire ya lo puso él. */
+.ev-continuar + .ev-acciones {
+    margin-top: 0.75rem;
+}
+
 .ev-lanzador {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    margin-bottom: 1.5rem;
     padding: 0.8rem 1.4rem;
     border: none;
     border-radius: 999px;
@@ -20,7 +48,6 @@
 }
 
 .ev-lanzador.ev-secundario {
-    margin-left: 0.6rem;
     background-color: #475569;
 }
 
@@ -90,7 +117,8 @@
 }
 
 .ev-continuar {
-    margin-bottom: 1rem;
+    margin-top: clamp(1.75rem, 5vh, 3.25rem);
+    margin-bottom: 0;
     padding: 0.9rem 1.2rem;
     border-left: 4px solid #198754;
     border-radius: 6px;
