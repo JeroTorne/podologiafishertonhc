@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
         candidatos: document.getElementById('ev-candidatos'),
         lista: document.getElementById('ev-lista'),
         otro: document.getElementById('ev-otro'),
-        activador: document.getElementById('ev-activador'),
         ayuda: document.getElementById('ev-ayuda'),
         rapido: document.getElementById('ev-rapido'),
         testigo: document.getElementById('ev-testigo'),
@@ -164,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             reconocimiento.start();
             escuchando = true;
-            esperarActivador();
+            marcarEstado('escuchando', 'Escuchando...');
         } catch (error) {
             // start() tira excepción si ya venía corriendo; lo reintentamos solos.
             escuchando = false;
@@ -184,19 +183,10 @@ document.addEventListener('DOMContentLoaded', function () {
         elementos.estado.textContent = texto;
     }
 
-    function esperarActivador() {
-        marcarEstado('escuchando', elementos.activador.checked
-            ? 'Escuchando. Decí «anotá» y la respuesta.'
-            : 'Escuchando...');
-    }
-
     function actualizarAyuda() {
-        const comandos = 'Podés decir: "siguiente", "anterior", "repetir", '
+        elementos.ayuda.textContent = 'Contestá normal, sin ninguna palabra '
+            + 'especial. Podés decir: "siguiente", "anterior", "repetir", '
             + '"saltear" o "terminar".';
-        elementos.ayuda.textContent = elementos.activador.checked
-            ? 'Para cargar un dato empezá con «anotá»: por ejemplo, "anotá, tipo dos". '
-                + 'Lo que no arranque así no se guarda. ' + comandos
-            : 'Se guarda todo lo que escuche. ' + comandos;
     }
 
     // Las preferencias quedan guardadas en el navegador. Puede fallar en modo
@@ -308,7 +298,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 campo: paso.campo,
                 texto: texto,
                 guion: panel.dataset.guion || 'historia',
-                activador: elementos.activador.checked,
             }),
         })
             .then(function (respuesta) { return respuesta.json(); })
@@ -320,15 +309,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 if (datos.comando) {
                     ejecutarComando(datos.comando);
-                    return;
-                }
-                if (datos.ignorado) {
-                    // Se dijo algo que no empezaba con la palabra clave: es
-                    // charla con el paciente, no una respuesta.
-                    registrar('ignorado (sin palabra clave): "' + texto + '"');
-                    elementos.escuchado.textContent = '';
-                    esperarActivador();
-                    escuchar();
                     return;
                 }
                 aplicarResultado(paso, datos, texto);
@@ -861,14 +841,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Botones
     // ------------------------------------------------------------------
 
-    elementos.activador.checked = recordado('ev-activador', true);
     elementos.vozAlta.checked = recordado('ev-voz-alta', true);
     actualizarAyuda();
-
-    elementos.activador.addEventListener('change', function () {
-        recordar('ev-activador', elementos.activador.checked);
-        actualizarAyuda();
-    });
 
     elementos.vozAlta.addEventListener('change', function () {
         recordar('ev-voz-alta', elementos.vozAlta.checked);

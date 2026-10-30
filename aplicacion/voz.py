@@ -184,9 +184,10 @@ def _opcion_negativa(paso):
     return None
 
 
-# Con el micrófono siempre abierto, lo que se charla con el paciente se puede
-# colar como respuesta. Con el activador puesto, solo cuenta lo que arranca
-# con una de estas palabras: así cada dato cargado es deliberado.
+# Solo para el dictado suelto, con la entrevista ya cerrada: ahí el micrófono
+# queda abierto toda la consulta y no hay ninguna pregunta en pantalla que
+# acote la respuesta, así que sin una de estas palabras delante se volcaría la
+# charla entera. Durante la entrevista no se usa: se contesta normal.
 ACTIVADORES = (
     'anota', 'anotar', 'anotale', 'anotalo', 'anotame',
     'pone', 'poner', 'ponele', 'escribi', 'cargale', 'marca', 'marcar',

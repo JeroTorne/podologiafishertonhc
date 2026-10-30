@@ -318,19 +318,13 @@ def interpretar_respuesta(request):
     texto = datos.get('texto', '')
 
     # "siguiente", "atrás", "repetir"... no son respuestas, son instrucciones.
-    # Van sin palabra clave: son inconfundibles y apurar la entrevista no
-    # ensucia la historia clínica.
     comando = voz.detectar_comando(texto)
     if comando:
         return JsonResponse({'ok': True, 'comando': comando})
 
-    # Con el activador puesto, lo que no empieza con "anotá" se descarta: es
-    # la charla con el paciente, no una respuesta.
-    if datos.get('activador'):
-        texto = voz.quitar_activador(texto)
-        if texto is None:
-            return JsonResponse({'ok': True, 'comando': None, 'ignorado': True})
-
+    # Durante la entrevista se contesta normal, sin palabra clave: hay una
+    # pregunta concreta en pantalla y exigirla resultó incómodo en la consulta.
+    # El dictado suelto sí la exige, porque ahí no hay pregunta que acote.
     resultado = voz.interpretar(paso, texto)
     resultado['ok'] = True
     resultado['comando'] = None
