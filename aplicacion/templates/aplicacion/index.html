@@ -145,6 +145,30 @@
 
         <!-- Masthead-->
 
+        <!-- Avisos de Django (paciente creado, historia guardada, etc.).
+             Van con posicion fija para no empujar el layout de ninguna pagina. -->
+        {% if messages %}
+        <div class="mensajes" id="mensajes">
+            {% for mensaje in messages %}
+            <div class="mensaje mensaje-{{ mensaje.tags|default:'info' }}">
+                <span>{{ mensaje }}</span>
+                <button type="button" class="mensaje-cerrar" aria-label="Cerrar">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        <script>
+            (function () {
+                var caja = document.getElementById('mensajes');
+                caja.addEventListener('click', function (evento) {
+                    if (evento.target.classList.contains('mensaje-cerrar')) {
+                        evento.target.closest('.mensaje').remove();
+                    }
+                });
+                setTimeout(function () { caja.classList.add('se-va'); }, 6000);
+            })();
+        </script>
+        {% endif %}
+
         {% block Body %}
 
 
@@ -171,7 +195,7 @@
 
                 </table>
             </div>
-</header>
+        </header>
 
 
 
