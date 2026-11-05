@@ -1,0 +1,25 @@
+{% comment %}
+Errores de validación del formulario.
+
+Sin esto, cuando Django rechaza el formulario la página se recarga sin decir
+nada y parece que el botón Guardar no hace nada. Se incluye arriba de cada
+formulario:
+
+    {% include "aplicacion/_errores_formulario.html" %}
+{% endcomment %}
+
+{% if form.errors %}
+<div class="errores-formulario" role="alert">
+    <p class="errores-titulo">No se pudo guardar. Revisá esto:</p>
+    <ul>
+        {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+        {% for campo in form %}
+            {% for error in campo.errors %}
+                <li><strong>{{ campo.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

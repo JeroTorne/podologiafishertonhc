@@ -9,6 +9,8 @@
 
         <form method="POST" enctype="multipart/form-data" id="FormularioConsulta">
             {% csrf_token %}
+
+            {% include "aplicacion/_errores_formulario.html" %}
                         
             <div class="side-container">
                 <div class="pie-type" style="border-top: 0 !important;">

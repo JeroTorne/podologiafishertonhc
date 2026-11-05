@@ -8,6 +8,8 @@
         
         <form method="POST" id="FormularioConsulta" class="container">
             {% csrf_token %}
+
+            {% include "aplicacion/_errores_formulario.html" %}
             
             <div class="side-container">
                 <div class="pie-type">
